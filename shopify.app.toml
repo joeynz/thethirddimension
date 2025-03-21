@@ -1,0 +1,26 @@
+name = "t3d-app"
+client_id = "YOUR_CLIENT_ID"
+application_url = "https://the-third-dimension.xyz"
+embedded = true
+
+[access_scopes]
+# Use access scopes to specify the level of access your app needs
+scopes = "write_products,write_customers,write_draft_orders"
+
+[auth]
+redirect_urls = [
+    "https://the-third-dimension.xyz/auth/callback",
+]
+
+[webhooks]
+api_version = "2024-01"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "bsbunj-hc.myshopify.com"
+
+[deployment]
+deployment_method = "oxygen" 
