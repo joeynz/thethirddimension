@@ -10,6 +10,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
+  useLocation,
 } from '@remix-run/react';
 import favicon from '~/assets/favicon.svg';
 import resetStyles from '~/styles/reset.css?url';
@@ -145,6 +146,8 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
+  const location = useLocation();
+  const isHomepage = location.pathname === '/';
 
   return (
     <html lang="en">
@@ -164,7 +167,11 @@ export function Layout({children}: {children?: React.ReactNode}) {
             shop={data.shop}
             consent={data.consent}
           >
-            <PageLayout {...data}>{children}</PageLayout>
+            {isHomepage ? (
+              children
+            ) : (
+              <PageLayout {...data}>{children}</PageLayout>
+            )}
           </Analytics.Provider>
         ) : (
           children
