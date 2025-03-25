@@ -5,6 +5,8 @@ A revolutionary 3D ecommerce experience built with Shopify Hydrogen and Shopify 
 
 The store can be found at https://the-third-dimension.xyz
 
+The myshopify.com URL for backend is bsbunj-hc.myshopify.com
+
 ## About
 
 The Third Dimension is a cutting-edge virtual furniture store that brings the physical shopping experience into the digital realm. Specializing in contemporary homewares - from furniture and decor to tableware - our platform offers a unique first-person shopping experience that bridges the gap between traditional retail and ecommerce.
