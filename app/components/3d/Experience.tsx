@@ -11,14 +11,14 @@ interface ExperienceProps {
   };
 }
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error?: Error }> {
   constructor(props: { children: ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error) {
@@ -29,7 +29,12 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     if (this.state.hasError) {
       return (
         <div className="flex h-full w-full items-center justify-center bg-red-50 text-red-500">
-          <div>Failed to load 3D experience. Please refresh the page.</div>
+          <div>
+            Failed to load 3D experience. Please refresh the page.
+            <pre className="mt-2 text-sm">
+              {this.state.error?.message}
+            </pre>
+          </div>
         </div>
       );
     }
@@ -39,7 +44,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 }
 
 export function Experience({ product }: ExperienceProps) {
-  console.log('Rendering Experience component');
+  console.log('Rendering Experience component with product:', product);
   const [isMounted, setIsMounted] = useState(false);
   
   useEffect(() => {
@@ -50,6 +55,15 @@ export function Experience({ product }: ExperienceProps) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gray-100">
         <div>Loading 3D experience...</div>
+      </div>
+    );
+  }
+
+  if (!product?.model3d?.url) {
+    console.error('No 3D model URL found in product:', product);
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-yellow-50 text-yellow-500">
+        <div>No 3D model available for this product.</div>
       </div>
     );
   }

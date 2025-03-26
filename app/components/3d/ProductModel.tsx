@@ -9,16 +9,24 @@ interface ProductModelProps {
 }
 
 export function ProductModel({ url, position = [0, 0, 0], scale = [1, 1, 1], rotation = [0, 0, 0] }: ProductModelProps) {
-  const { scene } = useGLTF(url);
+  console.log('Loading 3D model from URL:', url);
+  
+  try {
+    const { scene } = useGLTF(url);
+    console.log('Successfully loaded 3D model:', scene);
 
-  return (
-    <Suspense fallback={null}>
-      <primitive 
-        object={scene} 
-        position={position}
-        scale={scale}
-        rotation={rotation}
-      />
-    </Suspense>
-  );
+    return (
+      <Suspense fallback={null}>
+        <primitive 
+          object={scene} 
+          position={position}
+          scale={scale}
+          rotation={rotation}
+        />
+      </Suspense>
+    );
+  } catch (error) {
+    console.error('Error loading 3D model:', error);
+    throw error;
+  }
 } 

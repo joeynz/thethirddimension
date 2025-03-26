@@ -12,16 +12,23 @@ export function meta() {
 export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
-  const {product} = await storefront.query(PRODUCT_QUERY, {
-    variables: {
-      handle: 'test-chair',
-    },
-  });
-  
-  return defer({
-    shop: storefront.query(SHOP_QUERY),
-    product,
-  });
+  try {
+    const {product} = await storefront.query(PRODUCT_QUERY, {
+      variables: {
+        handle: 'test-chair',
+      },
+    });
+    
+    console.log('Fetched product data:', product);
+    
+    return defer({
+      shop: storefront.query(SHOP_QUERY),
+      product,
+    });
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    throw error;
+  }
 }
 
 export default function Homepage() {
@@ -56,6 +63,15 @@ const PRODUCT_QUERY = `#graphql
       model3d {
         url
         alt
+        previewImage {
+          url
+        }
+        sources {
+          url
+          format
+          mimeType
+          filesize
+        }
       }
     }
   }
