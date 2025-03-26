@@ -39,37 +39,25 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
   try {
-    // Start with a very simple query to test the connection
-    const TEST_QUERY = `#graphql
+    // First, let's get a list of all products to see what's available
+    const LIST_PRODUCTS_QUERY = `#graphql
       query {
-        shop {
-          name
-        }
-      }
-    `;
-
-    console.log('=== TESTING STOREFRONT CONNECTION ===');
-    const testResult = await storefront.query(TEST_QUERY);
-    console.log('=== TEST RESULT ===', JSON.stringify(testResult, null, 2));
-
-    // Now try to get a single product
-    const SIMPLE_PRODUCT_QUERY = `#graphql
-      query {
-        products(first: 1) {
+        products(first: 10) {
           edges {
             node {
               id
               title
               handle
+              availableForSale
             }
           }
         }
       }
     `;
 
-    console.log('=== FETCHING ANY PRODUCT ===');
-    const simpleProductResult = await storefront.query(SIMPLE_PRODUCT_QUERY);
-    console.log('=== SIMPLE PRODUCT RESULT ===', JSON.stringify(simpleProductResult, null, 2));
+    console.log('=== FETCHING ALL PRODUCTS ===');
+    const productsResult = await storefront.query(LIST_PRODUCTS_QUERY);
+    console.log('=== AVAILABLE PRODUCTS ===', JSON.stringify(productsResult, null, 2));
 
     // Now try to get our specific product
     console.log('=== FETCHING SPECIFIC PRODUCT ===');
