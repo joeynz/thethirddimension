@@ -29,20 +29,49 @@ export function meta() {
 export async function loader({context}: LoaderFunctionArgs) {
   console.log('=== LOADER STARTED ===');
   
-  if (!context.storefront) {
-    console.error('=== ERROR: Storefront context is missing ===');
-    return {
-      shop: null,
-      product: null,
-      error: 'Storefront API is not configured'
-    };
-  }
-
-  console.log('=== STOREFRONT CONTEXT AVAILABLE ===');
-  const {storefront} = context;
-  
   try {
-    // First, let's get a list of all products to see what's available
+    if (!context) {
+      console.error('=== ERROR: Context is missing ===');
+      return {
+        shop: null,
+        product: null,
+        error: 'Context is not available'
+      };
+    }
+
+    console.log('=== CONTEXT AVAILABLE ===');
+
+    if (!context.storefront) {
+      console.error('=== ERROR: Storefront context is missing ===');
+      return {
+        shop: null,
+        product: null,
+        error: 'Storefront API is not configured'
+      };
+    }
+
+    console.log('=== STOREFRONT CONTEXT AVAILABLE ===');
+    const {storefront} = context;
+
+    // First, let's test the storefront connection with a simple query
+    const TEST_QUERY = `#graphql
+      query {
+        shop {
+          name
+        }
+      }
+    `;
+
+    console.log('=== TESTING STOREFRONT CONNECTION ===');
+    try {
+      const testResult = await storefront.query(TEST_QUERY);
+      console.log('=== STOREFRONT TEST RESULT ===', JSON.stringify(testResult, null, 2));
+    } catch (testError) {
+      console.error('=== ERROR TESTING STOREFRONT ===', testError);
+      throw testError;
+    }
+
+    // Now try to get a list of all products
     const LIST_PRODUCTS_QUERY = `#graphql
       query {
         products(first: 10) {
@@ -125,7 +154,7 @@ export async function loader({context}: LoaderFunctionArgs) {
       error: null
     };
   } catch (error) {
-    console.error('=== ERROR: Failed to fetch product ===', error);
+    console.error('=== ERROR: Failed in loader ===', error);
     if (error instanceof Error) {
       console.error('Error details:', {
         message: error.message,
@@ -134,7 +163,7 @@ export async function loader({context}: LoaderFunctionArgs) {
       });
     }
     return {
-      shop: storefront.query(SHOP_QUERY),
+      shop: null,
       product: null,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
