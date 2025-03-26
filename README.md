@@ -67,7 +67,7 @@ Eight distinct lighting modes for different shopping atmospheres:
 
 ### Prerequisites
 
-- Node.js 18.0.0 or higher
+- Node.js 16.14.0 or higher
 - npm 8.0.0 or higher
 - Git
 - A Shopify Partner account
@@ -162,4 +162,6 @@ npm run deploy
 
 ## License
 
-[License information to be added]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+The MIT License is a permissive license that is short and to the point. It lets people do anything they want with your code as long as they provide attribution back to you and don't hold you liable.
