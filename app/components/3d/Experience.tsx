@@ -1,5 +1,15 @@
 import { Suspense, Component, type ReactNode, useEffect, useState } from 'react';
 import {Scene} from './Scene';
+import { ProductModel } from './ProductModel';
+
+interface ExperienceProps {
+  product: {
+    model3d: {
+      url: string;
+      alt: string;
+    };
+  };
+}
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
@@ -28,7 +38,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   }
 }
 
-export function Experience() {
+export function Experience({ product }: ExperienceProps) {
   console.log('Rendering Experience component');
   const [isMounted, setIsMounted] = useState(false);
   
@@ -52,7 +62,7 @@ export function Experience() {
             <div>Loading 3D scene...</div>
           </div>
         }>
-          <Scene />
+          <Scene product={product} />
         </Suspense>
       </ErrorBoundary>
     </div>

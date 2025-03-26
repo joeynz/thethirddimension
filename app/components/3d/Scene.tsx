@@ -3,8 +3,18 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Entrance } from './Entrance';
 import { Suspense } from 'react';
 import { useKeyboardControls } from '~/hooks/useKeyboardControls';
+import { ProductModel } from './ProductModel';
 
-function SceneContent() {
+interface SceneProps {
+  product: {
+    model3d: {
+      url: string;
+      alt: string;
+    };
+  };
+}
+
+function SceneContent({ product }: SceneProps) {
   useKeyboardControls();
   
   return (
@@ -49,11 +59,23 @@ function SceneContent() {
       <Suspense fallback={null}>
         <Entrance />
       </Suspense>
+
+      {/* Product model */}
+      {product.model3d?.url && (
+        <Suspense fallback={null}>
+          <ProductModel 
+            url={product.model3d.url}
+            position={[0, 0, 0]}
+            scale={[1, 1, 1]}
+            rotation={[0, 0, 0]}
+          />
+        </Suspense>
+      )}
     </>
   );
 }
 
-export function Scene() {
+export function Scene(props: SceneProps) {
   console.log('Rendering Scene component');
   
   return (
@@ -65,7 +87,7 @@ export function Scene() {
       
       <Canvas shadows className="h-full w-full">
         <Suspense fallback={null}>
-          <SceneContent />
+          <SceneContent {...props} />
         </Suspense>
       </Canvas>
     </div>
