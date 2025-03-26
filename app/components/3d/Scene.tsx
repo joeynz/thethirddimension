@@ -9,29 +9,38 @@ export function Scene() {
   return (
     <Canvas shadows className="h-full w-full">
       <Suspense fallback={null}>
-        <PerspectiveCamera makeDefault position={[0, 1.6, 5]} />
+        <PerspectiveCamera 
+          makeDefault 
+          position={[0, 2, 5]} 
+          fov={75}
+          near={0.1}
+          far={1000}
+        />
         <OrbitControls 
           enableZoom={false} 
           maxPolarAngle={Math.PI / 2} 
           minPolarAngle={Math.PI / 3}
           enableDamping
           dampingFactor={0.05}
+          target={[0, 1.5, 0]}
         />
         
         {/* Ambient light for general illumination */}
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={0.7} />
         
         {/* Directional light for shadows */}
         <directionalLight
           position={[5, 5, 5]}
-          intensity={1}
+          intensity={1.5}
           castShadow
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
+          shadow-camera-far={50}
+          shadow-camera-near={0.1}
         />
         
         {/* Ground */}
-        <mesh rotation-x={-Math.PI / 2} receiveShadow>
+        <mesh rotation-x={-Math.PI / 2} receiveShadow position={[0, 0, 0]}>
           <planeGeometry args={[50, 50]} />
           <meshStandardMaterial color="#a3a3a3" />
         </mesh>

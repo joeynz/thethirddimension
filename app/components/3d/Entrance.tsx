@@ -22,27 +22,27 @@ export function Entrance() {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} position={[0, 0, 0]}>
       {/* Store entrance structure */}
-      <mesh castShadow receiveShadow position={[0, 1.5, 0]}>
+      <group position={[0, 1.5, 0]}>
         {/* Main building */}
-        <mesh position={[0, 0, 0]}>
+        <mesh castShadow receiveShadow>
           <boxGeometry args={[4, 3, 0.2]} />
           <meshStandardMaterial color="#e5e5e5" />
         </mesh>
 
         {/* Door frame */}
-        <mesh position={[0, -0.5, 0.1]}>
+        <mesh castShadow receiveShadow position={[0, -0.5, 0.1]}>
           <boxGeometry args={[1.2, 2, 0.2]} />
           <meshStandardMaterial color="#8b4513" />
         </mesh>
 
         {/* Door */}
-        <mesh position={[0, -0.5, 0.2]}>
+        <mesh castShadow receiveShadow position={[0, -0.5, 0.2]}>
           <boxGeometry args={[1, 1.8, 0.1]} />
           <meshStandardMaterial color="#4a2511" />
         </mesh>
-      </mesh>
+      </group>
 
       {/* Floating "Enter" text */}
       <Text
@@ -53,6 +53,8 @@ export function Entrance() {
         anchorX="center"
         anchorY="middle"
         renderOrder={1}
+        castShadow
+        receiveShadow
       >
         ENTER
       </Text>
