@@ -19,7 +19,17 @@ export async function loader({context}: LoaderFunctionArgs) {
       },
     });
     
-    console.log('Fetched product data:', product);
+    console.log('Fetched product data:', JSON.stringify(product, null, 2));
+    
+    if (!product) {
+      console.error('No product found with handle: test-chair');
+      throw new Error('Product not found');
+    }
+
+    if (!product.model3d) {
+      console.error('Product has no 3D model data:', product);
+      throw new Error('Product has no 3D model');
+    }
     
     return defer({
       shop: storefront.query(SHOP_QUERY),
@@ -71,6 +81,25 @@ const PRODUCT_QUERY = `#graphql
           format
           mimeType
           filesize
+        }
+      }
+      media(first: 10) {
+        edges {
+          node {
+            ... on Model3d {
+              url
+              alt
+              previewImage {
+                url
+              }
+              sources {
+                url
+                format
+                mimeType
+                filesize
+              }
+            }
+          }
         }
       }
     }
