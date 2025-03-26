@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # The Third Dimension
 
 A revolutionary 3D ecommerce experience built with Shopify Hydrogen and Shopify Oxygen, offering an immersive virtual shopping environment for modern home furnishings.
@@ -68,7 +67,7 @@ Eight distinct lighting modes for different shopping atmospheres:
 
 ### Prerequisites
 
-- Node.js 16.14.0 or higher
+- Node.js 18.0.0 or higher
 - npm 8.0.0 or higher
 - Git
 - A Shopify Partner account
@@ -77,40 +76,10 @@ Eight distinct lighting modes for different shopping atmospheres:
 ### Installation
 
 1. Create a new Hydrogen project:
-=======
-<<<<<<< HEAD
-# Hydrogen template: Skeleton
-
-Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [Remix](https://remix.run/), Shopify’s full stack web framework. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
-
-[Check out Hydrogen docs](https://shopify.dev/custom-storefronts/hydrogen)
-[Get familiar with Remix](https://remix.run/docs/en/v1)
-
-## What's included
-
-- Remix
-- Hydrogen
-- Oxygen
-- Vite
-- Shopify CLI
-- ESLint
-- Prettier
-- GraphQL generator
-- TypeScript and JavaScript flavors
-- Minimal setup of components and routes
-
-## Getting started
-
-**Requirements:**
-
-- Node.js version 18.0.0 or higher
-
->>>>>>> 545ef0bc5f656c6383fa4fb57688487ee2ae9676
 ```bash
 npm create @shopify/hydrogen@latest
 ```
 
-<<<<<<< HEAD
 2. During the setup process:
    - Name your project: "thethirddimension"
    - Choose "Default Demo Template"
@@ -138,21 +107,10 @@ PUBLIC_STOREFRONT_API_TOKEN=your_storefront_api_token
 ### Development
 
 1. Start the development server:
-=======
-## Building for production
-
-```bash
-npm run build
-```
-
-## Local development
-
->>>>>>> 545ef0bc5f656c6383fa4fb57688487ee2ae9676
 ```bash
 npm run dev
 ```
 
-<<<<<<< HEAD
 2. Open your browser and visit:
 ```
 http://localhost:3000
@@ -205,12 +163,3 @@ npm run deploy
 ## License
 
 [License information to be added]
-=======
-## Setup for using Customer Account API (`/account` section)
-
-Follow step 1 and 2 of <https://shopify.dev/docs/custom-storefronts/building-with-the-customer-account-api/hydrogen#step-1-set-up-a-public-domain-for-local-development>
-=======
-# thethirddimension
-Hydrogen-based Shopify store - homepage in three.js or similar with pop-out Shopify modals and checkout.
->>>>>>> 88bcd38acff7a12034812993967e4b808c0b9f87
->>>>>>> 545ef0bc5f656c6383fa4fb57688487ee2ae9676
