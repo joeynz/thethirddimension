@@ -30,49 +30,19 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
   try {
-    // First, try to fetch by ID
-    const ID_QUERY = `#graphql
-      query Product($id: ID!) {
-        product(id: $id) {
-          id
-          title
-          handle
-        }
-      }
-    `;
-
     console.log('=== PRODUCT LOADER START ===');
-    console.log('Attempting to fetch product with ID: gid://shopify/Product/8186562805941');
+    console.log('Attempting to fetch product with handle: test-chair');
     
-    const idResult = await storefront.query(ID_QUERY, {
-      variables: {
-        id: 'gid://shopify/Product/8186562805941',
-      },
-    });
-    
-    console.log('=== ID QUERY RESULT ===', JSON.stringify(idResult, null, 2));
-
-    if (!idResult.product) {
-      console.error('=== ERROR: Product not found with ID query ===');
-      return {
-        shop: storefront.query(SHOP_QUERY),
-        product: null,
-        error: 'Product not found'
-      };
-    }
-
-    // If we found the product, now try the full query
-    console.log('=== Product found, fetching full details ===');
     const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
-        handle: idResult.product.handle,
+        handle: 'test-chair',
       },
     });
     
-    console.log('=== FULL PRODUCT RESPONSE ===', JSON.stringify(product, null, 2));
+    console.log('=== PRODUCT RESPONSE ===', JSON.stringify(product, null, 2));
     
     if (!product) {
-      console.error('=== ERROR: Product not found with full query ===');
+      console.error('=== ERROR: Product not found ===');
       return {
         shop: storefront.query(SHOP_QUERY),
         product: null,
@@ -195,6 +165,8 @@ const PRODUCT_QUERY = `#graphql
       title
       handle
       description
+      publishedAt
+      status
       model3d {
         url
         alt
@@ -242,6 +214,9 @@ const PRODUCT_QUERY = `#graphql
           }
         }
       }
+      onlineStoreUrl
+      availableForSale
+      totalInventory
     }
   }
 `;
