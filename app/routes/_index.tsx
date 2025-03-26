@@ -218,8 +218,16 @@ export default function Homepage() {
   }
 
   // Check if product has the required properties
-  if (!product.model3d && !product.media?.edges?.some((edge: MediaEdge) => edge.node?.__typename === 'Model3d')) {
-    console.error('=== ERROR: Product has no 3D model ===', product);
+  const hasModel3d = product.model3d || 
+    (product.media?.edges?.some((edge: MediaEdge) => edge.node?.__typename === 'Model3d'));
+
+  if (!hasModel3d) {
+    console.error('=== ERROR: Product has no 3D model ===', {
+      hasModel3d: !!product.model3d,
+      hasMedia: !!product.media,
+      mediaEdges: product.media?.edges?.length,
+      mediaTypes: product.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
+    });
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
         <div className="text-center">
