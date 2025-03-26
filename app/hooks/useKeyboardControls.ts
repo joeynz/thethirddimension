@@ -75,10 +75,10 @@ export function useKeyboardControls() {
         camera.position.addScaledVector(direction, -MOVEMENT_SPEED);
       }
       if (moveLeft.current) {
-        camera.position.addScaledVector(direction.cross(new Vector3(0, 1, 0)), -MOVEMENT_SPEED);
+        camera.position.addScaledVector(direction.cross(new Vector3(0, 1, 0)), MOVEMENT_SPEED);
       }
       if (moveRight.current) {
-        camera.position.addScaledVector(direction.cross(new Vector3(0, 1, 0)), MOVEMENT_SPEED);
+        camera.position.addScaledVector(direction.cross(new Vector3(0, 1, 0)), -MOVEMENT_SPEED);
       }
 
       requestAnimationFrame(moveCamera);
