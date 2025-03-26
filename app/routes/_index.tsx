@@ -27,6 +27,15 @@ export function meta() {
 }
 
 export async function loader({context}: LoaderFunctionArgs) {
+  if (!context.storefront) {
+    console.error('=== ERROR: Storefront context is missing ===');
+    return {
+      shop: null,
+      product: null,
+      error: 'Storefront API is not configured'
+    };
+  }
+
   const {storefront} = context;
   
   try {
@@ -63,6 +72,7 @@ export async function loader({context}: LoaderFunctionArgs) {
     console.log('=== SIMPLE PRODUCT RESULT ===', JSON.stringify(simpleProductResult, null, 2));
 
     // Now try to get our specific product
+    console.log('=== FETCHING SPECIFIC PRODUCT ===');
     const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
         handle: 'test-chair',
@@ -131,7 +141,11 @@ export default function Homepage() {
   console.log('=== RENDERING HOMEPAGE ===');
   const {shop, product, error} = useLoaderData<typeof loader>();
 
-  console.log('=== LOADER DATA ===', { shop, product, error });
+  console.log('=== LOADER DATA ===', { 
+    shop: shop ? 'Loading shop data...' : null, 
+    product: product ? { id: product.id, title: product.title } : null, 
+    error 
+  });
 
   if (error) {
     console.error('=== ERROR IN HOMEPAGE ===', error);
