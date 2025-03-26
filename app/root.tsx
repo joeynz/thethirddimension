@@ -112,7 +112,7 @@ export async function loader(args: LoaderFunctionArgs) {
           script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
           style-src 'self' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
           img-src 'self' data: https: blob:;
-          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com;
+          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.myshopify.com;
           worker-src 'self' blob:;
           child-src 'self' blob:;
           font-src 'self' data: https:;
