@@ -32,22 +32,22 @@ export async function loader({context}: LoaderFunctionArgs) {
   try {
     if (!context) {
       console.error('=== ERROR: Context is missing ===');
-      return {
+      return defer({
         shop: null,
         product: null,
         error: 'Context is not available'
-      };
+      });
     }
 
     console.log('=== CONTEXT AVAILABLE ===');
 
     if (!context.storefront) {
       console.error('=== ERROR: Storefront context is missing ===');
-      return {
+      return defer({
         shop: null,
         product: null,
         error: 'Storefront API is not configured'
-      };
+      });
     }
 
     console.log('=== STOREFRONT CONTEXT AVAILABLE ===');
@@ -109,11 +109,11 @@ export async function loader({context}: LoaderFunctionArgs) {
     
     if (!product) {
       console.error('=== ERROR: Product not found ===');
-      return {
+      return defer({
         shop: storefront.query(SHOP_QUERY),
         product: null,
         error: 'Product not found'
-      };
+      });
     }
 
     // If we found the product, now get the full details
@@ -144,25 +144,25 @@ export async function loader({context}: LoaderFunctionArgs) {
         mediaEdges: fullProduct.media?.edges?.length,
         mediaTypes: fullProduct.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
       });
-      return {
+      return defer({
         shop: storefront.query(SHOP_QUERY),
         product: {
           ...fullProduct,
           model3d: null
         },
         error: 'Product has no 3D model'
-      };
+      });
     }
     
     console.log('=== PRODUCT LOADER SUCCESS ===');
-    return {
+    return defer({
       shop: storefront.query(SHOP_QUERY),
       product: {
         ...fullProduct,
         model3d
       },
       error: null
-    };
+    });
   } catch (error) {
     console.error('=== ERROR: Failed in loader ===', error);
     if (error instanceof Error) {
@@ -172,11 +172,11 @@ export async function loader({context}: LoaderFunctionArgs) {
         name: error.name
       });
     }
-    return {
+    return defer({
       shop: null,
       product: null,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
+    });
   }
 }
 
