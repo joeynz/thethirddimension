@@ -7,7 +7,7 @@ export function Scene() {
   console.log('Rendering Scene component');
   
   return (
-    <Canvas shadows>
+    <Canvas shadows className="h-full w-full">
       <Suspense fallback={null}>
         <PerspectiveCamera makeDefault position={[0, 1.6, 5]} />
         <OrbitControls 

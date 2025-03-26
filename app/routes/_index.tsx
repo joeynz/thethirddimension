@@ -22,8 +22,10 @@ export default function Homepage() {
   const {shop} = useLoaderData<typeof loader>();
 
   return (
-    <div className="fixed inset-0 h-screen w-screen overflow-hidden">
-      <Experience />
+    <div className="relative h-screen w-screen overflow-hidden bg-gray-100">
+      <div className="absolute inset-0">
+        <Experience />
+      </div>
     </div>
   );
 }

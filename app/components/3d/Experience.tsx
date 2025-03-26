@@ -18,7 +18,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-screen w-full items-center justify-center bg-red-50 text-red-500">
+        <div className="flex h-full w-full items-center justify-center bg-red-50 text-red-500">
           <div>Failed to load 3D experience. Please refresh the page.</div>
         </div>
       );
@@ -38,17 +38,17 @@ export function Experience() {
   
   if (!isMounted) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-100">
+      <div className="flex h-full w-full items-center justify-center bg-gray-100">
         <div>Loading 3D experience...</div>
       </div>
     );
   }
   
   return (
-    <div className="h-screen w-full bg-gray-100">
+    <div className="h-full w-full">
       <ErrorBoundary>
         <Suspense fallback={
-          <div className="flex h-screen w-full items-center justify-center bg-gray-100">
+          <div className="flex h-full w-full items-center justify-center bg-gray-100">
             <div>Loading 3D scene...</div>
           </div>
         }>
