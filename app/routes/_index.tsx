@@ -33,6 +33,27 @@ export async function loader({context}: LoaderFunctionArgs) {
     console.log('=== PRODUCT LOADER START ===');
     console.log('Attempting to fetch product with handle: test-chair');
     
+    // First, try to get all products to see what's available
+    const ALL_PRODUCTS_QUERY = `#graphql
+      query {
+        products(first: 10) {
+          edges {
+            node {
+              id
+              title
+              handle
+              status
+            }
+          }
+        }
+      }
+    `;
+
+    console.log('=== FETCHING ALL PRODUCTS ===');
+    const allProducts = await storefront.query(ALL_PRODUCTS_QUERY);
+    console.log('=== ALL PRODUCTS ===', JSON.stringify(allProducts, null, 2));
+    
+    // Now try to fetch our specific product
     const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
         handle: 'test-chair',
@@ -82,6 +103,13 @@ export async function loader({context}: LoaderFunctionArgs) {
     };
   } catch (error) {
     console.error('=== ERROR: Failed to fetch product ===', error);
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
     return {
       shop: storefront.query(SHOP_QUERY),
       product: null,
