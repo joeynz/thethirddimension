@@ -30,101 +30,46 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
   try {
-    console.log('=== PRODUCT LOADER START ===');
-    
-    // First, try to get all products to see what's available
-    const ALL_PRODUCTS_QUERY = `#graphql
+    // Start with a very simple query to test the connection
+    const TEST_QUERY = `#graphql
       query {
-        products(first: 10) {
+        shop {
+          name
+        }
+      }
+    `;
+
+    console.log('=== TESTING STOREFRONT CONNECTION ===');
+    const testResult = await storefront.query(TEST_QUERY);
+    console.log('=== TEST RESULT ===', JSON.stringify(testResult, null, 2));
+
+    // Now try to get a single product
+    const SIMPLE_PRODUCT_QUERY = `#graphql
+      query {
+        products(first: 1) {
           edges {
             node {
               id
               title
               handle
-              status
-              publishedAt
             }
           }
         }
       }
     `;
 
-    console.log('=== FETCHING ALL PRODUCTS ===');
-    const allProducts = await storefront.query(ALL_PRODUCTS_QUERY);
-    console.log('=== ALL PRODUCTS ===', JSON.stringify(allProducts, null, 2));
-    
-    // Now try to fetch our specific product by ID
-    const PRODUCT_BY_ID_QUERY = `#graphql
-      query Product($id: ID!) {
-        product(id: $id) {
-          id
-          title
-          handle
-          description
-          publishedAt
-          status
-          model3d {
-            url
-            alt
-            previewImage {
-              url
-            }
-            sources {
-              url
-              format
-              mimeType
-              filesize
-            }
-          }
-          media(first: 10) {
-            edges {
-              node {
-                __typename
-                ... on Model3d {
-                  url
-                  alt
-                  previewImage {
-                    url
-                  }
-                  sources {
-                    url
-                    format
-                    mimeType
-                    filesize
-                  }
-                }
-                ... on MediaImage {
-                  url
-                  alt
-                }
-              }
-            }
-          }
-          variants(first: 1) {
-            edges {
-              node {
-                id
-                price {
-                  amount
-                }
-              }
-            }
-          }
-          onlineStoreUrl
-          availableForSale
-          totalInventory
-        }
-      }
-    `;
+    console.log('=== FETCHING ANY PRODUCT ===');
+    const simpleProductResult = await storefront.query(SIMPLE_PRODUCT_QUERY);
+    console.log('=== SIMPLE PRODUCT RESULT ===', JSON.stringify(simpleProductResult, null, 2));
 
-    console.log('=== FETCHING PRODUCT BY ID ===');
-    const {product} = await storefront.query(PRODUCT_BY_ID_QUERY, {
+    // Now try to get our specific product
+    const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
-        id: 'gid://shopify/Product/8186562805941',
+        handle: 'test-chair',
       },
     });
     
-    console.log('=== PRODUCT RESPONSE ===', JSON.stringify(product, null, 2));
+    console.log('=== SPECIFIC PRODUCT RESULT ===', JSON.stringify(product, null, 2));
     
     if (!product) {
       console.error('=== ERROR: Product not found ===');
