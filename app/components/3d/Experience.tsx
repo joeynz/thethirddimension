@@ -3,10 +3,10 @@ import {Scene} from './Scene';
 import { ProductModel } from './ProductModel';
 
 interface ExperienceProps {
-  product: {
-    model3d: {
-      url: string;
-      alt: string;
+  product?: {
+    model3d?: {
+      url?: string;
+      alt?: string;
     };
   };
 }
@@ -59,7 +59,16 @@ export function Experience({ product }: ExperienceProps) {
     );
   }
 
-  if (!product?.model3d?.url) {
+  if (!product) {
+    console.error('No product data provided to Experience component');
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-yellow-50 text-yellow-500">
+        <div>No product data available.</div>
+      </div>
+    );
+  }
+
+  if (!product.model3d?.url) {
     console.error('No 3D model URL found in product:', product);
     return (
       <div className="flex h-full w-full items-center justify-center bg-yellow-50 text-yellow-500">

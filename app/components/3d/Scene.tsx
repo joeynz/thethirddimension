@@ -6,10 +6,10 @@ import { useKeyboardControls } from '~/hooks/useKeyboardControls';
 import { ProductModel } from './ProductModel';
 
 interface SceneProps {
-  product: {
-    model3d: {
-      url: string;
-      alt: string;
+  product?: {
+    model3d?: {
+      url?: string;
+      alt?: string;
     };
   };
 }
@@ -61,7 +61,7 @@ function SceneContent({ product }: SceneProps) {
       </Suspense>
 
       {/* Product model */}
-      {product.model3d?.url && (
+      {product?.model3d?.url && (
         <Suspense fallback={null}>
           <ProductModel 
             url={product.model3d.url}
@@ -76,7 +76,7 @@ function SceneContent({ product }: SceneProps) {
 }
 
 export function Scene(props: SceneProps) {
-  console.log('Rendering Scene component');
+  console.log('Rendering Scene component with props:', props);
   
   return (
     <div className="relative h-full w-full">
