@@ -30,10 +30,10 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
   try {
-    // First, try a simple query to find the product
-    const SIMPLE_QUERY = `#graphql
-      query Product($handle: String!) {
-        product(handle: $handle) {
+    // First, try to fetch by ID
+    const ID_QUERY = `#graphql
+      query Product($id: ID!) {
+        product(id: $id) {
           id
           title
           handle
@@ -41,17 +41,17 @@ export async function loader({context}: LoaderFunctionArgs) {
       }
     `;
 
-    console.log('Attempting to fetch product with handle: test-chair');
-    const simpleResult = await storefront.query(SIMPLE_QUERY, {
+    console.log('Attempting to fetch product with ID: gid://shopify/Product/8186562805941');
+    const idResult = await storefront.query(ID_QUERY, {
       variables: {
-        handle: 'test-chair',
+        id: 'gid://shopify/Product/8186562805941',
       },
     });
     
-    console.log('Simple query result:', JSON.stringify(simpleResult, null, 2));
+    console.log('ID query result:', JSON.stringify(idResult, null, 2));
 
-    if (!simpleResult.product) {
-      console.error('Product not found with simple query');
+    if (!idResult.product) {
+      console.error('Product not found with ID query');
       return {
         shop: storefront.query(SHOP_QUERY),
         product: null,
@@ -63,7 +63,7 @@ export async function loader({context}: LoaderFunctionArgs) {
     console.log('Product found, fetching full details...');
     const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
-        handle: 'test-chair',
+        handle: idResult.product.handle,
       },
     });
     
