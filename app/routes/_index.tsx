@@ -30,17 +30,28 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
   try {
-    console.log('Fetching product with handle: test-chair');
-    const {product} = await storefront.query(PRODUCT_QUERY, {
+    // First, try a simple query to find the product
+    const SIMPLE_QUERY = `#graphql
+      query Product($handle: String!) {
+        product(handle: $handle) {
+          id
+          title
+          handle
+        }
+      }
+    `;
+
+    console.log('Attempting to fetch product with handle: test-chair');
+    const simpleResult = await storefront.query(SIMPLE_QUERY, {
       variables: {
         handle: 'test-chair',
       },
     });
     
-    console.log('Raw product response:', JSON.stringify(product, null, 2));
-    
-    if (!product) {
-      console.error('No product found with handle: test-chair');
+    console.log('Simple query result:', JSON.stringify(simpleResult, null, 2));
+
+    if (!simpleResult.product) {
+      console.error('Product not found with simple query');
       return {
         shop: storefront.query(SHOP_QUERY),
         product: null,
@@ -48,10 +59,16 @@ export async function loader({context}: LoaderFunctionArgs) {
       };
     }
 
-    // Log the media data specifically
-    console.log('Product media:', JSON.stringify(product.media, null, 2));
-    console.log('Product model3d:', JSON.stringify(product.model3d, null, 2));
-
+    // If we found the product, now try the full query
+    console.log('Product found, fetching full details...');
+    const {product} = await storefront.query(PRODUCT_QUERY, {
+      variables: {
+        handle: 'test-chair',
+      },
+    });
+    
+    console.log('Full product response:', JSON.stringify(product, null, 2));
+    
     // Check for 3D model in both model3d field and media
     const model3d = product.model3d || 
       product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
