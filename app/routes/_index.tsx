@@ -22,6 +22,13 @@ interface MediaEdge {
   };
 }
 
+interface ModelSource {
+  url: string;
+  format: string;
+  mimeType: string;
+  filesize: number;
+}
+
 type LoaderData = {
   header: HeaderQuery | null;
   cart: Promise<CartReturn | null>;
@@ -158,7 +165,33 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
         error: 'Product has no 3D model'
       });
     }
-    
+
+    // Get the first GLB or GLTF source
+    const modelSource = model3d.sources?.find((source: ModelSource) => 
+      source.format === 'GLB' || 
+      source.format === 'GLTF' ||
+      source.mimeType === 'model/gltf-binary' ||
+      source.mimeType === 'model/gltf+json'
+    );
+
+    if (!modelSource) {
+      console.error('=== ERROR: No valid 3D model source found ===', {
+        sources: model3d.sources
+      });
+      return defer<LoaderData>({
+        header,
+        cart,
+        isLoggedIn,
+        publicStoreDomain,
+        shop: storefront.query(SHOP_QUERY),
+        product: {
+          ...product,
+          model3d: null
+        },
+        error: 'No valid 3D model source found'
+      });
+    }
+
     console.log('=== PRODUCT LOADER SUCCESS ===');
     return defer<LoaderData>({
       header,
@@ -168,7 +201,10 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
       shop: storefront.query(SHOP_QUERY),
       product: {
         ...product,
-        model3d
+        model3d: {
+          ...model3d,
+          url: modelSource.url
+        }
       },
       error: null
     });
@@ -346,8 +382,8 @@ const PRODUCT_QUERY = `#graphql
               id
               sources {
                 url
-                mimeType
                 format
+                mimeType
                 filesize
               }
               alt
