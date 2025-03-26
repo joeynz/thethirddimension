@@ -27,6 +27,8 @@ export function meta() {
 }
 
 export async function loader({context}: LoaderFunctionArgs) {
+  console.log('=== LOADER STARTED ===');
+  
   if (!context.storefront) {
     console.error('=== ERROR: Storefront context is missing ===');
     return {
@@ -36,6 +38,7 @@ export async function loader({context}: LoaderFunctionArgs) {
     };
   }
 
+  console.log('=== STOREFRONT CONTEXT AVAILABLE ===');
   const {storefront} = context;
   
   try {
@@ -55,19 +58,32 @@ export async function loader({context}: LoaderFunctionArgs) {
       }
     `;
 
-    console.log('=== FETCHING ALL PRODUCTS ===');
-    const productsResult = await storefront.query(LIST_PRODUCTS_QUERY);
-    console.log('=== AVAILABLE PRODUCTS ===', JSON.stringify(productsResult, null, 2));
+    console.log('=== ATTEMPTING TO FETCH ALL PRODUCTS ===');
+    let productsResult;
+    try {
+      productsResult = await storefront.query(LIST_PRODUCTS_QUERY);
+      console.log('=== AVAILABLE PRODUCTS ===', JSON.stringify(productsResult, null, 2));
+    } catch (productsError) {
+      console.error('=== ERROR FETCHING PRODUCTS ===', productsError);
+      throw productsError;
+    }
 
     // Now try to get our specific product
-    console.log('=== FETCHING SPECIFIC PRODUCT ===');
-    const {product} = await storefront.query(PRODUCT_QUERY, {
-      variables: {
-        handle: 'test-chair',
-      },
-    });
+    console.log('=== ATTEMPTING TO FETCH SPECIFIC PRODUCT ===');
+    let productResult;
+    try {
+      productResult = await storefront.query(PRODUCT_QUERY, {
+        variables: {
+          handle: 'test-chair',
+        },
+      });
+      console.log('=== SPECIFIC PRODUCT RESULT ===', JSON.stringify(productResult, null, 2));
+    } catch (productError) {
+      console.error('=== ERROR FETCHING SPECIFIC PRODUCT ===', productError);
+      throw productError;
+    }
     
-    console.log('=== SPECIFIC PRODUCT RESULT ===', JSON.stringify(product, null, 2));
+    const {product} = productResult;
     
     if (!product) {
       console.error('=== ERROR: Product not found ===');
