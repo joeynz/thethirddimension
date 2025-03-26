@@ -41,17 +41,22 @@ export async function loader({context}: LoaderFunctionArgs) {
       }
     `;
 
+    // Log to both server and client
+    console.log('=== PRODUCT LOADER START ===');
     console.log('Attempting to fetch product with ID: gid://shopify/Product/8186562805941');
+    
     const idResult = await storefront.query(ID_QUERY, {
       variables: {
         id: 'gid://shopify/Product/8186562805941',
       },
     });
     
-    console.log('ID query result:', JSON.stringify(idResult, null, 2));
+    // Log the raw response
+    console.log('=== ID QUERY RESULT ===');
+    console.log(JSON.stringify(idResult, null, 2));
 
     if (!idResult.product) {
-      console.error('Product not found with ID query');
+      console.error('=== ERROR: Product not found with ID query ===');
       return {
         shop: storefront.query(SHOP_QUERY),
         product: null,
@@ -60,21 +65,24 @@ export async function loader({context}: LoaderFunctionArgs) {
     }
 
     // If we found the product, now try the full query
-    console.log('Product found, fetching full details...');
+    console.log('=== Product found, fetching full details ===');
     const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
         handle: idResult.product.handle,
       },
     });
     
-    console.log('Full product response:', JSON.stringify(product, null, 2));
+    // Log the full product response
+    console.log('=== FULL PRODUCT RESPONSE ===');
+    console.log(JSON.stringify(product, null, 2));
     
     // Check for 3D model in both model3d field and media
     const model3d = product.model3d || 
       product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
 
     if (!model3d) {
-      console.error('Product has no 3D model data:', {
+      console.error('=== ERROR: Product has no 3D model data ===');
+      console.error({
         hasModel3d: !!product.model3d,
         hasMedia: !!product.media,
         mediaEdges: product.media?.edges?.length,
@@ -90,6 +98,7 @@ export async function loader({context}: LoaderFunctionArgs) {
       };
     }
     
+    console.log('=== PRODUCT LOADER SUCCESS ===');
     return {
       shop: storefront.query(SHOP_QUERY),
       product: {
@@ -99,7 +108,8 @@ export async function loader({context}: LoaderFunctionArgs) {
       error: null
     };
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error('=== ERROR: Failed to fetch product ===');
+    console.error(error);
     return {
       shop: storefront.query(SHOP_QUERY),
       product: null,
@@ -109,10 +119,11 @@ export async function loader({context}: LoaderFunctionArgs) {
 }
 
 export default function Homepage() {
-  console.log('Rendering Homepage');
+  console.log('=== RENDERING HOMEPAGE ===');
   const {shop, product, error} = useLoaderData<typeof loader>();
 
   if (error) {
+    console.error('=== ERROR IN HOMEPAGE ===', error);
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
         <div className="text-center">
@@ -127,6 +138,7 @@ export default function Homepage() {
   }
 
   if (!product) {
+    console.error('=== ERROR: No product data ===');
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
         <div className="text-center">
@@ -137,6 +149,7 @@ export default function Homepage() {
     );
   }
 
+  console.log('=== RENDERING 3D EXPERIENCE ===');
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-gray-100">
       <div className="absolute inset-0">
