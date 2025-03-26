@@ -41,7 +41,6 @@ export async function loader({context}: LoaderFunctionArgs) {
       }
     `;
 
-    // Log to both server and client
     console.log('=== PRODUCT LOADER START ===');
     console.log('Attempting to fetch product with ID: gid://shopify/Product/8186562805941');
     
@@ -51,9 +50,7 @@ export async function loader({context}: LoaderFunctionArgs) {
       },
     });
     
-    // Log the raw response
-    console.log('=== ID QUERY RESULT ===');
-    console.log(JSON.stringify(idResult, null, 2));
+    console.log('=== ID QUERY RESULT ===', JSON.stringify(idResult, null, 2));
 
     if (!idResult.product) {
       console.error('=== ERROR: Product not found with ID query ===');
@@ -72,17 +69,23 @@ export async function loader({context}: LoaderFunctionArgs) {
       },
     });
     
-    // Log the full product response
-    console.log('=== FULL PRODUCT RESPONSE ===');
-    console.log(JSON.stringify(product, null, 2));
+    console.log('=== FULL PRODUCT RESPONSE ===', JSON.stringify(product, null, 2));
     
+    if (!product) {
+      console.error('=== ERROR: Product not found with full query ===');
+      return {
+        shop: storefront.query(SHOP_QUERY),
+        product: null,
+        error: 'Product not found'
+      };
+    }
+
     // Check for 3D model in both model3d field and media
     const model3d = product.model3d || 
       product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
 
     if (!model3d) {
-      console.error('=== ERROR: Product has no 3D model data ===');
-      console.error({
+      console.error('=== ERROR: Product has no 3D model data ===', {
         hasModel3d: !!product.model3d,
         hasMedia: !!product.media,
         mediaEdges: product.media?.edges?.length,
@@ -108,8 +111,7 @@ export async function loader({context}: LoaderFunctionArgs) {
       error: null
     };
   } catch (error) {
-    console.error('=== ERROR: Failed to fetch product ===');
-    console.error(error);
+    console.error('=== ERROR: Failed to fetch product ===', error);
     return {
       shop: storefront.query(SHOP_QUERY),
       product: null,
@@ -121,6 +123,8 @@ export async function loader({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   console.log('=== RENDERING HOMEPAGE ===');
   const {shop, product, error} = useLoaderData<typeof loader>();
+
+  console.log('=== LOADER DATA ===', { shop, product, error });
 
   if (error) {
     console.error('=== ERROR IN HOMEPAGE ===', error);
@@ -144,6 +148,22 @@ export default function Homepage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-yellow-600">Product Not Found</h1>
           <p className="mt-2 text-gray-600">Could not find product with handle "test-chair"</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if product has the required properties
+  if (!product.model3d && !product.media?.edges?.some((edge: MediaEdge) => edge.node?.__typename === 'Model3d')) {
+    console.error('=== ERROR: Product has no 3D model ===', product);
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-yellow-600">3D Model Not Available</h1>
+          <p className="mt-2 text-gray-600">This product does not have a 3D model attached.</p>
+          <p className="mt-4 text-sm text-gray-500">
+            Please add a 3D model to the product in your Shopify admin.
+          </p>
         </div>
       </div>
     );
