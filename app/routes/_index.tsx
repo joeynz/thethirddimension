@@ -79,22 +79,11 @@ export async function loader({context}: LoaderFunctionArgs) {
       throw productsError;
     }
 
-    // Now try to get our specific product with a simpler query first
-    const SIMPLE_PRODUCT_QUERY = `#graphql
-      query Product($handle: String!) {
-        product(handle: $handle) {
-          id
-          title
-          handle
-          availableForSale
-        }
-      }
-    `;
-
+    // Now try to get our specific product
     console.log('=== ATTEMPTING TO FETCH SPECIFIC PRODUCT ===');
     let productResult;
     try {
-      productResult = await storefront.query(SIMPLE_PRODUCT_QUERY, {
+      productResult = await storefront.query(PRODUCT_QUERY, {
         variables: {
           handle: 'test-chair',
         },
@@ -116,38 +105,19 @@ export async function loader({context}: LoaderFunctionArgs) {
       });
     }
 
-    // If we found the product, now get the full details
-    console.log('=== FETCHING FULL PRODUCT DETAILS ===');
-    let fullProductResult;
-    try {
-      fullProductResult = await storefront.query(PRODUCT_QUERY, {
-        variables: {
-          handle: 'test-chair',
-        },
-      });
-      console.log('=== FULL PRODUCT RESULT ===', JSON.stringify(fullProductResult, null, 2));
-    } catch (fullProductError) {
-      console.error('=== ERROR FETCHING FULL PRODUCT ===', fullProductError);
-      throw fullProductError;
-    }
-
-    const fullProduct = fullProductResult.product;
-
-    // Check for 3D model in both model3d field and media
-    const model3d = fullProduct.model3d || 
-      fullProduct.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
+    // Find the 3D model in the media collection
+    const model3d = product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
 
     if (!model3d) {
       console.error('=== ERROR: Product has no 3D model data ===', {
-        hasModel3d: !!fullProduct.model3d,
-        hasMedia: !!fullProduct.media,
-        mediaEdges: fullProduct.media?.edges?.length,
-        mediaTypes: fullProduct.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
+        hasMedia: !!product.media,
+        mediaEdges: product.media?.edges?.length,
+        mediaTypes: product.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
       });
       return defer({
         shop: storefront.query(SHOP_QUERY),
         product: {
-          ...fullProduct,
+          ...product,
           model3d: null
         },
         error: 'Product has no 3D model'
@@ -158,7 +128,7 @@ export async function loader({context}: LoaderFunctionArgs) {
     return defer({
       shop: storefront.query(SHOP_QUERY),
       product: {
-        ...fullProduct,
+        ...product,
         model3d
       },
       error: null
@@ -267,58 +237,19 @@ const PRODUCT_QUERY = `#graphql
       title
       handle
       description
-      publishedAt
-      status
-      model3d {
-        url
-        alt
-        previewImage {
-          url
-        }
-        sources {
-          url
-          format
-          mimeType
-          filesize
-        }
-      }
+      availableForSale
       media(first: 10) {
         edges {
           node {
             __typename
             ... on Model3d {
-              url
-              alt
-              previewImage {
-                url
-              }
-              sources {
-                url
-                format
-                mimeType
-                filesize
-              }
-            }
-            ... on MediaImage {
+              id
               url
               alt
             }
           }
         }
       }
-      variants(first: 1) {
-        edges {
-          node {
-            id
-            price {
-              amount
-            }
-          }
-        }
-      }
-      onlineStoreUrl
-      availableForSale
-      totalInventory
     }
   }
 `;
