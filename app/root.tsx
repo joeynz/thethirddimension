@@ -11,6 +11,7 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
   useLocation,
+  LiveReload,
 } from '@remix-run/react';
 import favicon from '~/assets/favicon.svg';
 import resetStyles from '~/styles/reset.css?url';
@@ -18,6 +19,7 @@ import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {json} from '@shopify/remix-oxygen';
 
 export type RootLoader = typeof loader;
 
@@ -67,6 +69,15 @@ export function links() {
   ];
 }
 
+export const meta = () => {
+  return [
+    {title: 'The Third Dimension'},
+    {description: 'A revolutionary 3D ecommerce experience'},
+    {viewport: 'width=device-width,initial-scale=1'},
+    {charset: 'utf-8'},
+  ];
+};
+
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
@@ -76,23 +87,45 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const {storefront, env} = args.context;
 
-  return {
-    ...deferredData,
-    ...criticalData,
-    publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
-    shop: getShopAnalytics({
-      storefront,
-      publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
-    }),
-    consent: {
-      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
-      storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-      withPrivacyBanner: false,
-      // localize the privacy banner
-      country: args.context.storefront.i18n.country,
-      language: args.context.storefront.i18n.language,
+  return json(
+    {
+      ...deferredData,
+      ...criticalData,
+      publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+      shop: getShopAnalytics({
+        storefront,
+        publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
+      }),
+      consent: {
+        checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+        storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+        withPrivacyBanner: false,
+        // localize the privacy banner
+        country: args.context.storefront.i18n.country,
+        language: args.context.storefront.i18n.language,
+      },
     },
-  };
+    {
+      headers: {
+        'Content-Security-Policy': `
+          default-src 'self' https://cdn.shopify.com https://shopify.com;
+          script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
+          style-src 'self' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
+          img-src 'self' data: https: blob:;
+          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com;
+          worker-src 'self' blob:;
+          child-src 'self' blob:;
+          font-src 'self' data: https:;
+          media-src 'self' https:;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          frame-ancestors 'none';
+          block-all-mixed-content;
+        `.replace(/\s+/g, ' ').trim(),
+      },
+    },
+  );
 }
 
 /**
@@ -178,6 +211,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         )}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
+        <LiveReload />
       </body>
     </html>
   );
