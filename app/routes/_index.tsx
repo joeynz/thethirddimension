@@ -53,25 +53,7 @@ export async function loader({context}: LoaderFunctionArgs) {
     console.log('=== STOREFRONT CONTEXT AVAILABLE ===');
     const {storefront} = context;
 
-    // First, let's test the storefront connection with a simple query
-    const TEST_QUERY = `#graphql
-      query {
-        shop {
-          name
-        }
-      }
-    `;
-
-    console.log('=== TESTING STOREFRONT CONNECTION ===');
-    try {
-      const testResult = await storefront.query(TEST_QUERY);
-      console.log('=== STOREFRONT TEST RESULT ===', JSON.stringify(testResult, null, 2));
-    } catch (testError) {
-      console.error('=== ERROR TESTING STOREFRONT ===', testError);
-      throw testError;
-    }
-
-    // Now try to get a list of all products
+    // First, let's get a list of all products to see what's available
     const LIST_PRODUCTS_QUERY = `#graphql
       query {
         products(first: 10) {
@@ -97,11 +79,22 @@ export async function loader({context}: LoaderFunctionArgs) {
       throw productsError;
     }
 
-    // Now try to get our specific product
+    // Now try to get our specific product with a simpler query first
+    const SIMPLE_PRODUCT_QUERY = `#graphql
+      query Product($handle: String!) {
+        product(handle: $handle) {
+          id
+          title
+          handle
+          availableForSale
+        }
+      }
+    `;
+
     console.log('=== ATTEMPTING TO FETCH SPECIFIC PRODUCT ===');
     let productResult;
     try {
-      productResult = await storefront.query(PRODUCT_QUERY, {
+      productResult = await storefront.query(SIMPLE_PRODUCT_QUERY, {
         variables: {
           handle: 'test-chair',
         },
@@ -123,21 +116,38 @@ export async function loader({context}: LoaderFunctionArgs) {
       };
     }
 
+    // If we found the product, now get the full details
+    console.log('=== FETCHING FULL PRODUCT DETAILS ===');
+    let fullProductResult;
+    try {
+      fullProductResult = await storefront.query(PRODUCT_QUERY, {
+        variables: {
+          handle: 'test-chair',
+        },
+      });
+      console.log('=== FULL PRODUCT RESULT ===', JSON.stringify(fullProductResult, null, 2));
+    } catch (fullProductError) {
+      console.error('=== ERROR FETCHING FULL PRODUCT ===', fullProductError);
+      throw fullProductError;
+    }
+
+    const fullProduct = fullProductResult.product;
+
     // Check for 3D model in both model3d field and media
-    const model3d = product.model3d || 
-      product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
+    const model3d = fullProduct.model3d || 
+      fullProduct.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
 
     if (!model3d) {
       console.error('=== ERROR: Product has no 3D model data ===', {
-        hasModel3d: !!product.model3d,
-        hasMedia: !!product.media,
-        mediaEdges: product.media?.edges?.length,
-        mediaTypes: product.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
+        hasModel3d: !!fullProduct.model3d,
+        hasMedia: !!fullProduct.media,
+        mediaEdges: fullProduct.media?.edges?.length,
+        mediaTypes: fullProduct.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
       });
       return {
         shop: storefront.query(SHOP_QUERY),
         product: {
-          ...product,
+          ...fullProduct,
           model3d: null
         },
         error: 'Product has no 3D model'
@@ -148,7 +158,7 @@ export async function loader({context}: LoaderFunctionArgs) {
     return {
       shop: storefront.query(SHOP_QUERY),
       product: {
-        ...product,
+        ...fullProduct,
         model3d
       },
       error: null
