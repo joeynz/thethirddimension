@@ -295,10 +295,54 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
 
+export type HeaderQueryVariables = StorefrontAPI.Exact<{[key: string]: never}>;
+
+export type HeaderQuery = {
+  shop: Pick<StorefrontAPI.Shop, 'name'> & {
+    primaryDomain: Pick<StorefrontAPI.Domain, 'url'>;
+  };
+  menu?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Menu, 'id'> & {
+      items: Array<Pick<StorefrontAPI.MenuItem, 'id' | 'url' | 'title'>>;
+    }
+  >;
+};
+
 export type LayoutQueryVariables = StorefrontAPI.Exact<{[key: string]: never}>;
 
 export type LayoutQuery = {
   shop: Pick<StorefrontAPI.Shop, 'name' | 'description'>;
+};
+
+export type HomepageProductQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
+}>;
+
+export type HomepageProductQuery = {
+  product?: StorefrontAPI.Maybe<
+    Pick<
+      StorefrontAPI.Product,
+      'id' | 'title' | 'handle' | 'description' | 'availableForSale'
+    > & {
+      media: {
+        edges: Array<{
+          node:
+            | {__typename: 'ExternalVideo' | 'MediaImage' | 'Video'}
+            | ({__typename: 'Model3d'} & Pick<
+                StorefrontAPI.Model3d,
+                'id' | 'alt'
+              > & {
+                  sources: Array<
+                    Pick<
+                      StorefrontAPI.Model3dSource,
+                      'url' | 'mimeType' | 'format' | 'filesize'
+                    >
+                  >;
+                });
+        }>;
+      };
+    }
+  >;
 };
 
 export type ArticleQueryVariables = StorefrontAPI.Exact<{
@@ -1112,9 +1156,17 @@ interface GeneratedQueryTypes {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
   };
+  '#graphql\n  query header {\n    shop {\n      name\n      primaryDomain {\n        url\n      }\n    }\n    menu(handle: "main-menu") {\n      id\n      items {\n        id\n        url\n        title\n      }\n    }\n  }\n': {
+    return: HeaderQuery;
+    variables: HeaderQueryVariables;
+  };
   '#graphql\n  query layout {\n    shop {\n      name\n      description\n    }\n  }\n': {
     return: LayoutQuery;
     variables: LayoutQueryVariables;
+  };
+  '#graphql\n  query HomepageProduct($handle: String!) {\n    product(handle: $handle) {\n      id\n      title\n      handle\n      description\n      availableForSale\n      media(first: 10) {\n        edges {\n          node {\n            __typename\n            ... on Model3d {\n              id\n              sources {\n                url\n                mimeType\n                format\n                filesize\n              }\n              alt\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+    return: HomepageProductQuery;
+    variables: HomepageProductQueryVariables;
   };
   '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      articleByHandle(handle: $articleHandle) {\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;
