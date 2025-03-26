@@ -30,13 +30,14 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   
   try {
+    console.log('Fetching product with handle: test-chair');
     const {product} = await storefront.query(PRODUCT_QUERY, {
       variables: {
         handle: 'test-chair',
       },
     });
     
-    console.log('Fetched product data:', JSON.stringify(product, null, 2));
+    console.log('Raw product response:', JSON.stringify(product, null, 2));
     
     if (!product) {
       console.error('No product found with handle: test-chair');
@@ -47,12 +48,21 @@ export async function loader({context}: LoaderFunctionArgs) {
       };
     }
 
+    // Log the media data specifically
+    console.log('Product media:', JSON.stringify(product.media, null, 2));
+    console.log('Product model3d:', JSON.stringify(product.model3d, null, 2));
+
     // Check for 3D model in both model3d field and media
     const model3d = product.model3d || 
       product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
 
     if (!model3d) {
-      console.error('Product has no 3D model data:', product);
+      console.error('Product has no 3D model data:', {
+        hasModel3d: !!product.model3d,
+        hasMedia: !!product.media,
+        mediaEdges: product.media?.edges?.length,
+        mediaTypes: product.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
+      });
       return {
         shop: storefront.query(SHOP_QUERY),
         product: {
@@ -164,6 +174,20 @@ const PRODUCT_QUERY = `#graphql
                 mimeType
                 filesize
               }
+            }
+            ... on MediaImage {
+              url
+              alt
+            }
+          }
+        }
+      }
+      variants(first: 1) {
+        edges {
+          node {
+            id
+            price {
+              amount
             }
           }
         }
