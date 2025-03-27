@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 import { Entrance } from './Entrance';
 import { Suspense } from 'react';
 import { useKeyboardControls } from '~/hooks/useKeyboardControls';
@@ -69,11 +69,52 @@ function SceneContent({ product }: SceneProps) {
         <meshStandardMaterial color="#0000ff" />
       </mesh>
 
-      {/* Back wall */}
+      {/* North wall */}
       <mesh receiveShadow position={[0, 25, -25]}>
         <boxGeometry args={[50, 50, 0.2]} />
         <meshStandardMaterial color="#006400" />
       </mesh>
+      <Text
+        position={[0, 45, -25]}
+        fontSize={2}
+        color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+      >
+        NORTH
+      </Text>
+
+      {/* East wall */}
+      <mesh receiveShadow position={[25, 25, 0]}>
+        <boxGeometry args={[0.2, 50, 50]} />
+        <meshStandardMaterial color="#800080" />
+      </mesh>
+      <Text
+        position={[25, 45, 0]}
+        fontSize={2}
+        color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+        rotation={[0, Math.PI / 2, 0]}
+      >
+        EAST
+      </Text>
+
+      {/* West wall */}
+      <mesh receiveShadow position={[-25, 25, 0]}>
+        <boxGeometry args={[0.2, 50, 50]} />
+        <meshStandardMaterial color="#ffa500" />
+      </mesh>
+      <Text
+        position={[-25, 45, 0]}
+        fontSize={2}
+        color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+        rotation={[0, -Math.PI / 2, 0]}
+      >
+        WEST
+      </Text>
 
       {/* Origin sphere */}
       <mesh position={[0, 0, 0]}>
