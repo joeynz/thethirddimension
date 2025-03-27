@@ -28,51 +28,51 @@ function SceneContent({ product }: SceneProps) {
     <>
       <PerspectiveCamera 
         makeDefault 
-        position={[0, 30, 40]} 
-        fov={60}
+        position={[0, 15, 30]} 
+        fov={75}
         near={0.1}
         far={1000}
       />
       <OrbitControls 
-        enableZoom={false} 
+        enableZoom={true} 
         maxPolarAngle={Math.PI / 2} 
-        minPolarAngle={Math.PI / 3}
+        minPolarAngle={0}
         enableDamping
         dampingFactor={0.05}
-        target={[0, 25, 0]}
-        enablePan={false}
-        enableRotate={false}
+        target={[0, 0, 0]}
+        enablePan={true}
+        enableRotate={true}
         mouseButtons={{
-          LEFT: undefined,
-          MIDDLE: undefined,
-          RIGHT: undefined
+          LEFT: 0,
+          MIDDLE: 1,
+          RIGHT: 2
         }}
       />
       
       {/* Ambient light for general illumination */}
-      <ambientLight intensity={0.7} />
+      <ambientLight intensity={1.0} />
       
       {/* Directional light for shadows */}
       <directionalLight
-        position={[5, 5, 5]}
-        intensity={1.5}
+        position={[10, 10, 10]}
+        intensity={2.0}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-far={50}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-far={100}
         shadow-camera-near={0.1}
       />
       
       {/* Ground */}
       <mesh receiveShadow position={[0, -0.1, 0]}>
         <boxGeometry args={[50, 0.2, 50]} />
-        <meshStandardMaterial color="#0000ff" />
+        <meshStandardMaterial color="#0000ff" metalness={0.2} roughness={0.8} />
       </mesh>
 
       {/* North wall */}
       <mesh receiveShadow position={[0, 25, -25]}>
         <boxGeometry args={[50, 50, 0.2]} />
-        <meshStandardMaterial color="#006400" />
+        <meshStandardMaterial color="#006400" metalness={0.2} roughness={0.8} />
       </mesh>
       <Text
         position={[0, 45, -25]}
@@ -87,7 +87,7 @@ function SceneContent({ product }: SceneProps) {
       {/* East wall */}
       <mesh receiveShadow position={[25, 25, 0]}>
         <boxGeometry args={[0.2, 50, 50]} />
-        <meshStandardMaterial color="#800080" />
+        <meshStandardMaterial color="#800080" metalness={0.2} roughness={0.8} />
       </mesh>
       <Text
         position={[25, 45, 0]}
@@ -103,7 +103,7 @@ function SceneContent({ product }: SceneProps) {
       {/* West wall */}
       <mesh receiveShadow position={[-25, 25, 0]}>
         <boxGeometry args={[0.2, 50, 50]} />
-        <meshStandardMaterial color="#ffa500" />
+        <meshStandardMaterial color="#ffa500" metalness={0.2} roughness={0.8} />
       </mesh>
       <Text
         position={[-25, 45, 0]}
@@ -117,9 +117,9 @@ function SceneContent({ product }: SceneProps) {
       </Text>
 
       {/* Origin sphere */}
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color="#ff0000" />
+      <mesh position={[0, 0, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[1, 32, 32]} />
+        <meshStandardMaterial color="#ff0000" metalness={0.2} roughness={0.8} />
       </mesh>
 
       {/* Store entrance */}
