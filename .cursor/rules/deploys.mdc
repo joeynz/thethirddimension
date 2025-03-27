@@ -7,4 +7,4 @@ alwaysApply: true
 
 This repository is setup with deployment from Github to Oxygen. We do not need to run `shopify hydrogen deploy` as this will automatically run when code changes are pushed to the connected repository.
 
-The "Deploy" workflow is simply adding files, committing files, and pushing to Github.
+The "Deploy" workflow is simply adding files, committing files, and pushing to Github. `git add {files} && git commit -m {message} && git push origin main` should all be run together.
