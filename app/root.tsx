@@ -1,6 +1,6 @@
 import {useNonce, getShopAnalytics, Analytics} from '@shopify/hydrogen';
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import type {CartReturn, ShopAnalytics} from '@shopify/hydrogen';
+import type {CartReturn, ShopAnalytics, LanguageCode} from '@shopify/hydrogen';
 import {
   Links,
   Meta,
@@ -26,14 +26,14 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 export type RootLoader = typeof loader;
 
 interface RootData {
-  cart: CartReturn | null;
-  isLoggedIn: boolean;
-  shop: ShopAnalytics | null;
+  cart: Promise<CartApiQueryFragment | null>;
+  isLoggedIn: Promise<boolean>;
+  shop: Promise<ShopAnalytics | null>;
   header: any;
   footer: Promise<any>;
   publicStoreDomain: string;
   consent: {
-    language?: string;
+    language?: LanguageCode;
   };
 }
 
@@ -104,12 +104,14 @@ export function meta() {
   ];
 }
 
-export async function loader({context}: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
+  const {context} = args;
+  
   // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData({context});
+  const deferredData = loadDeferredData(args);
 
   // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData({context});
+  const criticalData = await loadCriticalData(args);
 
   const {storefront, env, cart, customerAccount} = context;
   const cartPromise = cart.get();
@@ -119,22 +121,16 @@ export async function loader({context}: LoaderFunctionArgs) {
     publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
   });
 
-  const [cartData, isLoggedIn, shop] = await Promise.all([
-    cartPromise,
-    isLoggedInPromise,
-    shopPromise,
-  ]);
-
   return json(
     {
       ...deferredData,
       ...criticalData,
       publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
-      cart: cartData,
-      isLoggedIn,
-      shop,
+      cart: cartPromise,
+      isLoggedIn: isLoggedInPromise,
+      shop: shopPromise,
       consent: {
-        language: context.storefront.i18n.language,
+        language: context.storefront.i18n.language as LanguageCode,
       },
     },
     {
@@ -160,17 +156,17 @@ export async function loader({context}: LoaderFunctionArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: LoaderFunctionArgs) {
+async function loadCriticalData(args: LoaderFunctionArgs) {
+  const {context} = args;
   const {storefront} = context;
 
   const [header] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        headerMenuHandle: 'main-menu', // Adjust to your header menu handle
+        headerMenuHandle: 'main-menu',
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {header};
@@ -181,7 +177,8 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData(args: LoaderFunctionArgs) {
+  const {context} = args;
   const {storefront, customerAccount, cart} = context;
 
   // defer the footer query (below the fold)
@@ -189,14 +186,14 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
+        footerMenuHandle: 'footer',
       },
     })
     .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
       console.error(error);
       return null;
     });
+
   return {
     cart: cart.get(),
     isLoggedIn: customerAccount.isLoggedIn(),
