@@ -1,11 +1,10 @@
-import {useRef, useEffect} from 'react';
-import {Form, type FormProps} from '@remix-run/react';
+import {useRef} from 'react';
+import {useNavigate} from '@remix-run/react';
+import {useFocusOnCmdK} from '~/lib/hooks';
 
-type SearchFormProps = Omit<FormProps, 'children'> & {
-  children: (args: {
-    inputRef: React.RefObject<HTMLInputElement>;
-  }) => React.ReactNode;
-};
+interface SearchFormProps {
+  children: (props: {inputRef: React.RefObject<HTMLInputElement>}) => React.ReactNode;
+}
 
 /**
  * Search form component that sends search requests to the `/search` route.
@@ -26,19 +25,25 @@ type SearchFormProps = Omit<FormProps, 'children'> & {
  *  )}
  *  </SearchForm>
  */
-export function SearchForm({children, ...props}: SearchFormProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+export function SearchForm({children}: SearchFormProps) {
+  const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useFocusOnCmdK(inputRef);
 
-  if (typeof children !== 'function') {
-    return null;
-  }
-
   return (
-    <Form method="get" {...props}>
+    <form
+      role="search"
+      className="relative flex w-full items-center"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const searchValue = e.currentTarget.search.value;
+        if (!searchValue) return;
+        navigate(`/search?q=${encodeURIComponent(searchValue)}`);
+      }}
+    >
       {children({inputRef})}
-    </Form>
+    </form>
   );
 }
 

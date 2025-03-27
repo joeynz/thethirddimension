@@ -335,7 +335,7 @@ export type HomepageProductQuery = {
                   sources: Array<
                     Pick<
                       StorefrontAPI.Model3dSource,
-                      'url' | 'mimeType' | 'format' | 'filesize'
+                      'url' | 'format' | 'mimeType' | 'filesize'
                     >
                   >;
                 });
@@ -1164,7 +1164,7 @@ interface GeneratedQueryTypes {
     return: LayoutQuery;
     variables: LayoutQueryVariables;
   };
-  '#graphql\n  query HomepageProduct($handle: String!) {\n    product(handle: $handle) {\n      id\n      title\n      handle\n      description\n      availableForSale\n      media(first: 10) {\n        edges {\n          node {\n            __typename\n            ... on Model3d {\n              id\n              sources {\n                url\n                mimeType\n                format\n                filesize\n              }\n              alt\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query HomepageProduct($handle: String!) {\n    product(handle: $handle) {\n      id\n      title\n      handle\n      description\n      availableForSale\n      media(first: 10) {\n        edges {\n          node {\n            __typename\n            ... on Model3d {\n              id\n              sources {\n                url\n                format\n                mimeType\n                filesize\n              }\n              alt\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: HomepageProductQuery;
     variables: HomepageProductQueryVariables;
   };
