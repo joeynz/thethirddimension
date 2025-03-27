@@ -40,6 +40,13 @@ function SceneContent({ product }: SceneProps) {
         enableDamping
         dampingFactor={0.05}
         target={[0, 1.5, 0]}
+        enablePan={false}
+        enableRotate={false}
+        mouseButtons={{
+          LEFT: undefined,
+          MIDDLE: undefined,
+          RIGHT: undefined
+        }}
       />
       
       {/* Ambient light for general illumination */}
