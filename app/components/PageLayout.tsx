@@ -5,6 +5,7 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
+import type {CartReturn, ShopAnalytics} from '@shopify/hydrogen';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
@@ -16,12 +17,16 @@ import {
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 
 interface PageLayoutProps {
-  cart: Promise<CartApiQueryFragment | null>;
+  cart: Promise<CartReturn | null>;
   footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
   children?: React.ReactNode;
+  shop?: Promise<ShopAnalytics | null>;
+  consent?: {
+    language?: string;
+  };
 }
 
 export function PageLayout({
@@ -31,6 +36,8 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  shop,
+  consent,
 }: PageLayoutProps) {
   return (
     <Aside.Provider>

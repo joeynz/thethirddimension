@@ -21,16 +21,22 @@ import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {json} from '@shopify/remix-oxygen';
-import type {CartApiQueryFragment} from 'storefrontapi.generated';
+import type {CartApiQueryFragment, FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 
 export type RootLoader = typeof loader;
+
+interface ConsentData {
+  language?: string;
+  checkoutDomain?: string;
+  storefrontAccessToken?: string;
+}
 
 interface RootData {
   cart: Promise<CartReturn | null>;
   isLoggedIn: Promise<boolean>;
   shop: Promise<ShopAnalytics | null>;
-  header: any;
-  footer: Promise<any>;
+  header: HeaderQuery;
+  footer: Promise<FooterQuery | null>;
   publicStoreDomain: string;
   consent: {
     language?: string;
@@ -99,6 +105,8 @@ export function meta() {
         form-action 'self';
         frame-ancestors 'none';
         block-all-mixed-content;
+        script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
       `.replace(/\s+/g, ' ').trim(),
     },
   ];
@@ -132,12 +140,12 @@ export async function loader(args: LoaderFunctionArgs) {
       consent: {
         language: context.storefront.i18n.language,
       },
-    },
+    } as RootData,
     {
       headers: {
         'content-security-policy': `
           default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval' 'unsafe-inline' blob:;
-          worker-src 'self' blob:;
+          worker-src 'self' blob: 'unsafe-eval';
           connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net;
           font-src 'self' https://cdn.jsdelivr.net;
           media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
@@ -146,6 +154,8 @@ export async function loader(args: LoaderFunctionArgs) {
           form-action 'self';
           frame-ancestors 'none';
           block-all-mixed-content;
+          script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
+          style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
         `.replace(/\s+/g, ' ').trim(),
       },
     },
@@ -243,7 +253,25 @@ export function Layout({children}: {children?: React.ReactNode}) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const nonce = useNonce();
+  const data = useRouteLoaderData<RootData>('root');
+
+  return (
+    <html lang="en">
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <PageLayout {...data}>
+          <Outlet />
+        </PageLayout>
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
+        <LiveReload nonce={nonce} />
+      </body>
+    </html>
+  );
 }
 
 export function ErrorBoundary() {
