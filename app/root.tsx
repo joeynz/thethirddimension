@@ -1,5 +1,6 @@
 import {useNonce, getShopAnalytics, Analytics} from '@shopify/hydrogen';
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import type {CartReturn, ShopAnalytics, CountryCode} from '@shopify/hydrogen';
 import {
   Links,
   Meta,
@@ -20,8 +21,23 @@ import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {json} from '@shopify/remix-oxygen';
+import type {CartApiQueryFragment} from 'storefrontapi.generated';
 
 export type RootLoader = typeof loader;
+
+type Consent = {
+  language?: string;
+};
+
+interface RootData {
+  cart: Promise<CartReturn | null>;
+  isLoggedIn: Promise<boolean>;
+  shop: Promise<ShopAnalytics | null>;
+  header: any;
+  footer: Promise<any>;
+  publicStoreDomain: string;
+  consent: Consent;
+}
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -102,17 +118,23 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  const {storefront, env} = args.context;
+  const {storefront, env, cart, customerAccount} = args.context;
+
+  const cartPromise = cart.get();
+  const isLoggedInPromise = customerAccount.isLoggedIn();
+  const shopPromise = getShopAnalytics({
+    storefront,
+    publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
+  });
 
   return json(
     {
       ...deferredData,
       ...criticalData,
       publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
-      shop: getShopAnalytics({
-        storefront,
-        publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
-      }),
+      cart: cartPromise,
+      isLoggedIn: isLoggedInPromise,
+      shop: shopPromise,
       consent: {
         checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
         storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
@@ -194,7 +216,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
-  const data = useRouteLoaderData<RootLoader>('root');
+  const data = useRouteLoaderData<RootLoader>('root') as RootData;
   const location = useLocation();
   const isHomepage = location.pathname === '/';
 
@@ -238,7 +260,7 @@ export default function App() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError();
+  const error = useRouteError() as Error | unknown;
   let errorMessage = 'Unknown error';
   let errorStatus = 500;
 
