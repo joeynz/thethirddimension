@@ -85,76 +85,57 @@ export function links() {
   ];
 }
 
-export const meta = () => {
+export function meta() {
   return [
     {title: 'The Third Dimension'},
     {description: 'A revolutionary 3D ecommerce experience'},
-    {viewport: 'width=device-width,initial-scale=1'},
-    {charset: 'utf-8'},
     {
-      'Content-Security-Policy': `
-        default-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
-        script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
+      'content-security-policy': `
+        default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval' 'unsafe-inline' blob:;
         worker-src 'self' blob:;
-        connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com https://cdn.jsdelivr.net;
-        img-src 'self' data: https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
-        style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
-        font-src 'self' data: https://cdn.shopify.com https://cdn.jsdelivr.net;
-        media-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+        connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net;
+        font-src 'self' https://cdn.jsdelivr.net;
+        media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
         object-src 'none';
         base-uri 'self';
         form-action 'self';
         frame-ancestors 'none';
         block-all-mixed-content;
-      `.replace(/\s+/g, ' ').trim()
-    }
+      `.replace(/\s+/g, ' ').trim(),
+    },
   ];
-};
+}
 
-export async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  const {storefront, env, cart, customerAccount} = args.context;
-
+export async function loader({context}: LoaderFunctionArgs) {
+  const {cart, customerAccount} = context;
   const cartPromise = cart.get();
   const isLoggedInPromise = customerAccount.isLoggedIn();
-  const shopPromise = getShopAnalytics({
-    storefront,
-    publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
-  });
+  const shopPromise = getShopAnalytics({...context.env});
+
+  const [cartData, isLoggedIn, shop] = await Promise.all([
+    cartPromise,
+    isLoggedInPromise,
+    shopPromise,
+  ]);
 
   return json(
     {
-      ...deferredData,
-      ...criticalData,
-      publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
-      cart: cartPromise,
-      isLoggedIn: isLoggedInPromise,
-      shop: shopPromise,
+      cart: cartData,
+      isLoggedIn,
+      shop,
+      publicStoreDomain: context.env.PUBLIC_STORE_DOMAIN,
       consent: {
-        checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
-        storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-        withPrivacyBanner: false,
-        // localize the privacy banner
-        country: args.context.storefront.i18n.country,
-        language: args.context.storefront.i18n.language,
+        language: context.env.PUBLIC_LANGUAGE_CODE,
       },
     },
     {
       headers: {
-        'Content-Security-Policy': `
-          default-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
-          script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
+        'content-security-policy': `
+          default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval' 'unsafe-inline' blob:;
           worker-src 'self' blob:;
-          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com https://cdn.jsdelivr.net;
-          img-src 'self' data: https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
-          style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
-          font-src 'self' data: https://cdn.shopify.com https://cdn.jsdelivr.net;
-          media-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net;
+          font-src 'self' https://cdn.jsdelivr.net;
+          media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
           object-src 'none';
           base-uri 'self';
           form-action 'self';
