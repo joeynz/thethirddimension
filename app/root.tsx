@@ -130,7 +130,7 @@ export async function loader(args: LoaderFunctionArgs) {
     {
       headers: {
         'content-security-policy': `
-          default-src 'self' https://cdn.shopify.com https://shopify.com;
+          default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval';
           worker-src 'self' blob: 'unsafe-eval';
           connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.jsdelivr.net https://*.githubusercontent.com https://*.github.com;
           font-src 'self' https://cdn.jsdelivr.net;
