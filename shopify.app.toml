@@ -1,32 +1,18 @@
-<<<<<<< HEAD
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "38131c5c7410151c7de5e289b1e28871"
-application_url = "https://shopify.dev/apps/default-app-home"
-embedded = true
 name = "t3d-app"
+client_id = "38131c5c7410151c7de5e289b1e28871"
+application_url = "https://the-third-dimension.xyz"
+embedded = true
 handle = "t3d-app"
 
 [build]
 include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+dev_store_url = "bsbunj-hc.myshopify.com"
 
 [webhooks]
-api_version = "2025-01"
-
-[access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
-
-[auth]
-redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
-
-[pos]
-embedded = false
-=======
-name = "t3d-app"
-client_id = "YOUR_CLIENT_ID"
-application_url = "https://the-third-dimension.xyz"
-embedded = true
+api_version = "2024-01"
 
 [access_scopes]
 # Use access scopes to specify the level of access your app needs
@@ -37,16 +23,8 @@ redirect_urls = [
     "https://the-third-dimension.xyz/auth/callback",
 ]
 
-[webhooks]
-api_version = "2024-01"
-
 [pos]
 embedded = false
 
-[build]
-automatically_update_urls_on_dev = true
-dev_store_url = "bsbunj-hc.myshopify.com"
-
 [deployment]
-deployment_method = "oxygen" 
->>>>>>> 545ef0bc5f656c6383fa4fb57688487ee2ae9676
+deployment_method = "oxygen"
