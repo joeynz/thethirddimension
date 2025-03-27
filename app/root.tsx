@@ -167,14 +167,52 @@ async function loadCriticalData(args: LoaderFunctionArgs) {
       }),
     ]);
 
-    if (!header?.shop) {
-      throw new Error('Failed to load shop data');
-    }
+    // Provide default values if shop data is missing
+    const defaultHeader = {
+      shop: {
+        id: 'default',
+        name: 'The Third Dimension',
+        description: 'A revolutionary 3D ecommerce experience',
+        primaryDomain: {
+          url: 'https://the-third-dimension.xyz',
+        },
+        brand: {
+          logo: {
+            image: {
+              url: '',
+            },
+          },
+        },
+      },
+      menu: null,
+    };
 
-    return {header};
+    return {
+      header: header || defaultHeader,
+    };
   } catch (error) {
     console.error('Error loading critical data:', error);
-    throw new Response('Failed to load critical data', {status: 500});
+    // Return default values instead of throwing an error
+    return {
+      header: {
+        shop: {
+          id: 'default',
+          name: 'The Third Dimension',
+          description: 'A revolutionary 3D ecommerce experience',
+          primaryDomain: {
+            url: 'https://the-third-dimension.xyz',
+          },
+          brand: {
+            logo: {
+              image: {
+                url: '',
+              },
+            },
+          },
+        },
+        menu: null,
+      },
+    };
   }
 }
 
