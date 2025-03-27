@@ -99,82 +99,138 @@ export function meta() {
 export async function loader(args: LoaderFunctionArgs) {
   const {context} = args;
   
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+  try {
+    // Start fetching non-critical data without blocking time to first byte
+    const deferredData = loadDeferredData(args);
 
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
+    // Await the critical data required to render initial state of the page
+    const criticalData = await loadCriticalData(args);
 
-  const {storefront, env, cart, customerAccount} = context;
-  const cartPromise = cart.get();
-  const isLoggedInPromise = customerAccount.isLoggedIn();
-  
-  // Handle missing environment variables
-  const publicStorefrontId = env.PUBLIC_STOREFRONT_ID || 'default';
-  const publicStoreDomain = env.PUBLIC_STORE_DOMAIN || 'bsbunj-hc.myshopify.com';
-  const publicCheckoutDomain = env.PUBLIC_CHECKOUT_DOMAIN || 'bsbunj-hc.myshopify.com';
-  const publicStorefrontApiToken = env.PUBLIC_STOREFRONT_API_TOKEN || 'default';
+    const {storefront, env, cart, customerAccount} = context;
+    const cartPromise = cart.get();
+    const isLoggedInPromise = customerAccount.isLoggedIn();
+    
+    // Handle missing environment variables
+    const publicStorefrontId = env.PUBLIC_STOREFRONT_ID || 'default';
+    const publicStoreDomain = env.PUBLIC_STORE_DOMAIN || 'bsbunj-hc.myshopify.com';
+    const publicCheckoutDomain = env.PUBLIC_CHECKOUT_DOMAIN || 'bsbunj-hc.myshopify.com';
+    const publicStorefrontApiToken = env.PUBLIC_STOREFRONT_API_TOKEN || 'default';
 
-  const shopPromise = getShopAnalytics({
-    storefront,
-    publicStorefrontId,
-  });
+    const shopPromise = getShopAnalytics({
+      storefront,
+      publicStorefrontId,
+    });
 
-  // Ensure header is always defined
-  const header = criticalData.header || {
-    shop: {
-      id: 'default',
-      name: 'The Third Dimension',
-      description: 'A revolutionary 3D ecommerce experience',
-      primaryDomain: {
-        url: 'https://the-third-dimension.xyz',
-      },
-      brand: {
-        logo: {
-          image: {
-            url: '',
+    // Ensure header is always defined
+    const header = criticalData.header || {
+      shop: {
+        id: 'default',
+        name: 'The Third Dimension',
+        description: 'A revolutionary 3D ecommerce experience',
+        primaryDomain: {
+          url: 'https://the-third-dimension.xyz',
+        },
+        brand: {
+          logo: {
+            image: {
+              url: '',
+            },
           },
         },
       },
-    },
-    menu: null,
-  };
+      menu: null,
+    };
 
-  return json(
-    {
-      ...deferredData,
-      ...criticalData,
-      header,
-      publicStoreDomain,
-      cart: cartPromise,
-      isLoggedIn: isLoggedInPromise,
-      shop: shopPromise,
-      consent: {
-        language: context.storefront.i18n.language,
-        checkoutDomain: publicCheckoutDomain,
-        storefrontAccessToken: publicStorefrontApiToken,
+    return json(
+      {
+        ...deferredData,
+        ...criticalData,
+        header,
+        publicStoreDomain,
+        cart: cartPromise,
+        isLoggedIn: isLoggedInPromise,
+        shop: shopPromise,
+        consent: {
+          language: context.storefront.i18n.language,
+          checkoutDomain: publicCheckoutDomain,
+          storefrontAccessToken: publicStorefrontApiToken,
+        },
+      } as RootData,
+      {
+        headers: {
+          'content-security-policy': `
+            default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval';
+            worker-src 'self' blob: 'unsafe-eval';
+            connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.jsdelivr.net https://*.githubusercontent.com https://*.github.com;
+            font-src 'self' https://cdn.jsdelivr.net;
+            media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+            frame-ancestors 'none';
+            block-all-mixed-content;
+            script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
+            style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            img-src 'self' data: https://cdn.shopify.com https://bsbunj-hc.myshopify.com https://*.myshopify.com;
+          `.replace(/\s+/g, ' ').trim(),
+        },
       },
-    } as RootData,
-    {
-      headers: {
-        'content-security-policy': `
-          default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval';
-          worker-src 'self' blob: 'unsafe-eval';
-          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.jsdelivr.net https://*.githubusercontent.com https://*.github.com;
-          font-src 'self' https://cdn.jsdelivr.net;
-          media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
-          object-src 'none';
-          base-uri 'self';
-          form-action 'self';
-          frame-ancestors 'none';
-          block-all-mixed-content;
-          script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
-          style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-          img-src 'self' data: https://cdn.shopify.com https://bsbunj-hc.myshopify.com https://*.myshopify.com;
-        `.replace(/\s+/g, ' ').trim(),
+    );
+  } catch (error) {
+    console.error('Error in root loader:', error);
+    return json(
+      {
+        header: {
+          shop: {
+            id: 'default',
+            name: 'The Third Dimension',
+            description: 'A revolutionary 3D ecommerce experience',
+            primaryDomain: {
+              url: 'https://the-third-dimension.xyz',
+            },
+            brand: {
+              logo: {
+                image: {
+                  url: '',
+                },
+              },
+            },
+          },
+          menu: null,
+        },
+        cart: Promise.resolve(null),
+        isLoggedIn: Promise.resolve(false),
+        shop: Promise.resolve(null),
+        footer: Promise.resolve(null),
+        publicStoreDomain: 'bsbunj-hc.myshopify.com',
+        consent: {
+          language: 'EN',
+          checkoutDomain: 'bsbunj-hc.myshopify.com',
+          storefrontAccessToken: 'default',
+        },
+      } as RootData,
+      {
+        status: 200,
+        headers: {
+          'content-security-policy': `
+            default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval';
+            worker-src 'self' blob: 'unsafe-eval';
+            connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.jsdelivr.net https://*.githubusercontent.com https://*.github.com;
+            font-src 'self' https://cdn.jsdelivr.net;
+            media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+            frame-ancestors 'none';
+            block-all-mixed-content;
+            script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
+            style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            img-src 'self' data: https://cdn.shopify.com https://bsbunj-hc.myshopify.com https://*.myshopify.com;
+          `.replace(/\s+/g, ' ').trim(),
+        },
       },
-    },
-  );
+    );
+  }
 }
 
 /**
