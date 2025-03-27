@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Defining deployments
+
+This repository is setup with deployment from Github to Oxygen. We do not need to run `shopify hydrogen deploy` as this will automatically run when code changes are pushed to the connected repository.
+
+The "Deploy" workflow is simply adding files, committing files, and pushing to Github.
