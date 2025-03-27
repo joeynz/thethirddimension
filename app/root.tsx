@@ -75,6 +75,17 @@ export const meta = () => {
     {description: 'A revolutionary 3D ecommerce experience'},
     {viewport: 'width=device-width,initial-scale=1'},
     {charset: 'utf-8'},
+    {
+      'Content-Security-Policy': `
+        default-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+        script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
+        worker-src 'self' blob:;
+        connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com;
+        img-src 'self' data: https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+        style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
+        font-src 'self' data: https://cdn.shopify.com;
+      `.replace(/\s+/g, ' ').trim()
+    }
   ];
 };
 
@@ -108,20 +119,13 @@ export async function loader(args: LoaderFunctionArgs) {
     {
       headers: {
         'Content-Security-Policy': `
-          default-src 'self' https://cdn.shopify.com https://shopify.com;
+          default-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
           script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
-          style-src 'self' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
-          img-src 'self' data: https: blob:;
-          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.myshopify.com;
           worker-src 'self' blob:;
-          child-src 'self' blob:;
-          font-src 'self' data: https:;
-          media-src 'self' https:;
-          object-src 'none';
-          base-uri 'self';
-          form-action 'self';
-          frame-ancestors 'none';
-          block-all-mixed-content;
+          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com;
+          img-src 'self' data: https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+          style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
+          font-src 'self' data: https://cdn.shopify.com;
         `.replace(/\s+/g, ' ').trim(),
       },
     },
