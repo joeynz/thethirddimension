@@ -17,6 +17,13 @@ interface SceneProps {
 function SceneContent({ product }: SceneProps) {
   useKeyboardControls();
   
+  console.log('SceneContent received product:', {
+    hasProduct: !!product,
+    hasModel3d: !!product?.model3d,
+    modelUrl: product?.model3d?.url,
+    modelAlt: product?.model3d?.alt
+  });
+  
   return (
     <>
       <PerspectiveCamera 
@@ -76,7 +83,12 @@ function SceneContent({ product }: SceneProps) {
 }
 
 export function Scene(props: SceneProps) {
-  console.log('Rendering Scene component with props:', props);
+  console.log('Scene component received props:', {
+    hasProduct: !!props.product,
+    hasModel3d: !!props.product?.model3d,
+    modelUrl: props.product?.model3d?.url,
+    modelAlt: props.product?.model3d?.alt
+  });
   
   return (
     <div className="relative h-full w-full">
