@@ -172,16 +172,25 @@ async function loadCriticalData(args: LoaderFunctionArgs) {
   const {context} = args;
   const {storefront} = context;
 
-  const [header] = await Promise.all([
-    storefront.query(HEADER_QUERY, {
-      cache: storefront.CacheLong(),
-      variables: {
-        headerMenuHandle: 'main-menu',
-      },
-    }),
-  ]);
+  try {
+    const [header] = await Promise.all([
+      storefront.query(HEADER_QUERY, {
+        cache: storefront.CacheLong(),
+        variables: {
+          headerMenuHandle: 'main-menu',
+        },
+      }),
+    ]);
 
-  return {header};
+    if (!header) {
+      throw new Error('Failed to load header data');
+    }
+
+    return {header};
+  } catch (error) {
+    console.error('Error loading critical data:', error);
+    throw new Response('Failed to load critical data', {status: 500});
+  }
 }
 
 /**
@@ -202,13 +211,23 @@ function loadDeferredData(args: LoaderFunctionArgs) {
       },
     })
     .catch((error) => {
-      console.error(error);
+      console.error('Error loading footer:', error);
       return null;
     });
 
+  const cartPromise = cart.get().catch((error) => {
+    console.error('Error loading cart:', error);
+    return null;
+  });
+
+  const isLoggedInPromise = customerAccount.isLoggedIn().catch((error) => {
+    console.error('Error checking login status:', error);
+    return false;
+  });
+
   return {
-    cart: cart.get(),
-    isLoggedIn: customerAccount.isLoggedIn(),
+    cart: cartPromise,
+    isLoggedIn: isLoggedInPromise,
     footer,
   };
 }
@@ -218,6 +237,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
   const data = useRouteLoaderData<RootLoader>('root') as RootData;
   const location = useLocation();
   const isHomepage = location.pathname === '/';
+
+  if (!data) {
+    return null;
+  }
 
   return (
     <html lang="en">
@@ -231,21 +254,17 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <Links />
       </head>
       <body>
-        {data ? (
-          <Analytics.Provider
-            cart={data.cart}
-            shop={data.shop}
-            consent={data.consent}
-          >
-            {isHomepage ? (
-              children
-            ) : (
-              <PageLayout {...data}>{children}</PageLayout>
-            )}
-          </Analytics.Provider>
-        ) : (
-          children
-        )}
+        <Analytics.Provider
+          cart={data.cart}
+          shop={data.shop}
+          consent={data.consent}
+        >
+          {isHomepage ? (
+            children
+          ) : (
+            <PageLayout {...data}>{children}</PageLayout>
+          )}
+        </Analytics.Provider>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
         <LiveReload />
@@ -255,29 +274,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
 }
 
 export default function App() {
-  const nonce = useNonce();
-  const data = useRouteLoaderData<RootData>('root');
-
-  if (!data) {
-    return null;
-  }
-
-  return (
-    <html lang="en">
-      <head>
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <PageLayout {...data}>
-          <Outlet />
-        </PageLayout>
-        <ScrollRestoration nonce={nonce} />
-        <Scripts nonce={nonce} />
-        <LiveReload nonce={nonce} />
-      </body>
-    </html>
-  );
+  return <Outlet />;
 }
 
 export function ErrorBoundary() {
