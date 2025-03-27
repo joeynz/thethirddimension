@@ -80,10 +80,16 @@ export const meta = () => {
         default-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
         script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
         worker-src 'self' blob:;
-        connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com;
+        connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com https://cdn.jsdelivr.net;
         img-src 'self' data: https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
         style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
-        font-src 'self' data: https://cdn.shopify.com;
+        font-src 'self' data: https://cdn.shopify.com https://cdn.jsdelivr.net;
+        media-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        block-all-mixed-content;
       `.replace(/\s+/g, ' ').trim()
     }
   ];
@@ -122,10 +128,16 @@ export async function loader(args: LoaderFunctionArgs) {
           default-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
           script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.shopify.com https://shopify.com;
           worker-src 'self' blob:;
-          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com;
+          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.shopify.com https://cdn.jsdelivr.net;
           img-src 'self' data: https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
           style-src 'self' 'unsafe-inline' https://cdn.shopify.com;
-          font-src 'self' data: https://cdn.shopify.com;
+          font-src 'self' data: https://cdn.shopify.com https://cdn.jsdelivr.net;
+          media-src 'self' https://cdn.shopify.com https://shopify.com https://bsbunj-hc.myshopify.com;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          frame-ancestors 'none';
+          block-all-mixed-content;
         `.replace(/\s+/g, ' ').trim(),
       },
     },
