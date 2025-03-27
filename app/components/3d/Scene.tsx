@@ -28,8 +28,8 @@ function SceneContent({ product }: SceneProps) {
     <>
       <PerspectiveCamera 
         makeDefault 
-        position={[0, 2, 5]} 
-        fov={75}
+        position={[0, 30, 40]} 
+        fov={60}
         near={0.1}
         far={1000}
       />
@@ -39,7 +39,7 @@ function SceneContent({ product }: SceneProps) {
         minPolarAngle={Math.PI / 3}
         enableDamping
         dampingFactor={0.05}
-        target={[0, 1.5, 0]}
+        target={[0, 25, 0]}
         enablePan={false}
         enableRotate={false}
         mouseButtons={{
