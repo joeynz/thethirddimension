@@ -25,8 +25,10 @@ import type {CartApiQueryFragment, FooterQuery, HeaderQuery} from 'storefrontapi
 
 export type RootLoader = typeof loader;
 
+type LanguageCode = 'EN' | 'ES' | 'FR' | 'DE' | 'JA';
+
 interface ConsentData {
-  language?: string;
+  language?: LanguageCode;
   checkoutDomain?: string;
   storefrontAccessToken?: string;
 }
@@ -38,9 +40,7 @@ interface RootData {
   header: HeaderQuery;
   footer: Promise<FooterQuery | null>;
   publicStoreDomain: string;
-  consent: {
-    language?: string;
-  };
+  consent: ConsentData;
 }
 
 /**
@@ -139,6 +139,8 @@ export async function loader(args: LoaderFunctionArgs) {
       shop: shopPromise,
       consent: {
         language: context.storefront.i18n.language,
+        checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+        storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
       },
     } as RootData,
     {
@@ -255,6 +257,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
 export default function App() {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootData>('root');
+
+  if (!data) {
+    return null;
+  }
 
   return (
     <html lang="en">
