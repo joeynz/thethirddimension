@@ -21,14 +21,34 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop} = header;
+  const {shop, menu} = header;
   return (
     <header className="header">
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
         <strong>{shop.name}</strong>
       </NavLink>
+      <HeaderMenu menu={menu} />
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
     </header>
+  );
+}
+
+function HeaderMenu({menu}: {menu: HeaderQuery['menu']}) {
+  if (!menu) return null;
+
+  return (
+    <nav className="header-menu" role="navigation">
+      {menu.items.map((item) => (
+        <NavLink
+          key={item.id}
+          prefetch="intent"
+          to={item.url || '#'}
+          style={activeLinkStyle}
+        >
+          {item.title}
+        </NavLink>
+      ))}
+    </nav>
   );
 }
 
