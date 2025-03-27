@@ -63,98 +63,61 @@ Eight distinct lighting modes for different shopping atmospheres:
 - **3D Rendering**: Three.js/WebGL
 - **eCommerce Backend**: Shopify
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 16.14.0 or higher
-- npm 8.0.0 or higher
-- Git
-- A Shopify Partner account
-- A Shopify store (development or production)
-
-### Installation
-
-1. Create a new Hydrogen project:
-```bash
-npm create @shopify/hydrogen@latest
-```
-
-2. During the setup process:
-   - Name your project: "thethirddimension"
-   - Choose "Default Demo Template"
-   - Select your preferred language (TypeScript recommended)
-   - Choose your styling solution (Tailwind CSS recommended)
-
-3. Navigate to the project directory:
-```bash
-cd thethirddimension
-```
-
-4. Install additional dependencies:
-```bash
-npm install three @react-three/fiber @react-three/drei @types/three
-```
-
-5. Set up your environment variables:
-   - Create a `.env` file in the root directory
-   - Add your Shopify store credentials:
-```env
-PUBLIC_STORE_DOMAIN=your-store.myshopify.com
-PUBLIC_STOREFRONT_API_TOKEN=your_storefront_api_token
-```
-
-### Development
-
-1. Start the development server:
-```bash
-npm run dev
-```
-
-2. Open your browser and visit:
-```
-http://localhost:3000
-```
-
-### Project Structure
+## Project Structure
 
 ```
 thethirddimension/
 ├── app/
 │   ├── components/     # React components
+│   │   ├── Scene/     # 3D scene components
+│   │   ├── UI/        # User interface components
+│   │   └── Layout/    # Layout components
 │   ├── routes/        # Route components
 │   ├── styles/        # CSS and styling files
 │   └── lib/           # Utility functions and hooks
+│       ├── lighting.ts # Lighting system configuration
+│       └── controls.ts # Camera and movement controls
 ├── public/            # Static assets
 │   └── models/        # 3D models and textures
 └── package.json
 ```
 
-### Configuration
+## Development
 
-1. Shopify Setup:
-   - Go to your Shopify Partner dashboard
-   - Create a new store or link existing store
-   - Generate Storefront API access token
-   - Update `.env` file with credentials
+### Local Development
 
-2. 3D Environment Setup:
-   - Place 3D models in `public/models/`
-   - Configure lighting presets in `app/lib/lighting.ts`
-   - Set up camera controls in `app/lib/controls.ts`
-
-### Deployment
-
-1. Connect your GitHub repository to Shopify Oxygen:
-   - Go to your Shopify admin
-   - Navigate to Online Store > Hosting
-   - Follow the deployment instructions
-
-2. Or deploy manually:
+1. Clone the repository:
 ```bash
-npm run build
-npm run deploy
+git clone https://github.com/joeynz/thethirddimension.git
+cd thethirddimension
 ```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Open your browser and visit:
+```
+http://localhost:3000
+```
+
+### Environment Variables
+
+The project requires the following environment variables in `.env`:
+```env
+PUBLIC_STORE_DOMAIN=bsbunj-hc.myshopify.com
+PUBLIC_STOREFRONT_API_TOKEN=your_storefront_api_token
+```
+
+## Deployment
+
+The project is automatically deployed to Shopify Oxygen when changes are pushed to the main branch. No manual deployment steps are required.
 
 ## Contributing
 
