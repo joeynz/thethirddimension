@@ -86,11 +86,39 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
     console.log('=== STOREFRONT CONTEXT AVAILABLE ===');
     const {storefront} = context;
 
-    // Fetch header data
-    const {header} = await storefront.query<{header: HeaderQuery}>(HEADER_QUERY);
+    // Provide default header
+    const defaultHeader = {
+      shop: {
+        id: 'default',
+        name: 'The Third Dimension',
+        description: 'A revolutionary 3D ecommerce experience',
+        primaryDomain: {
+          url: 'https://the-third-dimension.xyz',
+        },
+        brand: {
+          logo: {
+            image: {
+              url: '',
+            },
+          },
+        },
+      },
+      menu: null,
+    };
+
+    // Fetch header data with error handling
+    let header;
+    try {
+      const headerResult = await storefront.query<{header: HeaderQuery}>(HEADER_QUERY);
+      header = headerResult.header || defaultHeader;
+    } catch (headerError) {
+      console.error('=== ERROR FETCHING HEADER ===', headerError);
+      header = defaultHeader;
+    }
+
     const cart = context.cart.get();
     const isLoggedIn = context.customerAccount.isLoggedIn();
-    const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
+    const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN || 'bsbunj-hc.myshopify.com';
     const footer = storefront.query(FOOTER_QUERY, {
       variables: {
         footerMenuHandle: 'footer',
@@ -231,10 +259,27 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
   } catch (error) {
     console.error('=== ERROR IN LOADER ===', error);
     return defer<LoaderData>({
-      header: null,
+      header: {
+        shop: {
+          id: 'default',
+          name: 'The Third Dimension',
+          description: 'A revolutionary 3D ecommerce experience',
+          primaryDomain: {
+            url: 'https://the-third-dimension.xyz',
+          },
+          brand: {
+            logo: {
+              image: {
+                url: '',
+              },
+            },
+          },
+        },
+        menu: null,
+      },
       cart: Promise.resolve(null),
       isLoggedIn: Promise.resolve(false),
-      publicStoreDomain: '',
+      publicStoreDomain: 'bsbunj-hc.myshopify.com',
       shop: null,
       product: null,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
