@@ -108,23 +108,30 @@ export async function loader(args: LoaderFunctionArgs) {
   const {storefront, env, cart, customerAccount} = context;
   const cartPromise = cart.get();
   const isLoggedInPromise = customerAccount.isLoggedIn();
+  
+  // Handle missing environment variables
+  const publicStorefrontId = env.PUBLIC_STOREFRONT_ID || 'default';
+  const publicStoreDomain = env.PUBLIC_STORE_DOMAIN || 'bsbunj-hc.myshopify.com';
+  const publicCheckoutDomain = env.PUBLIC_CHECKOUT_DOMAIN || 'bsbunj-hc.myshopify.com';
+  const publicStorefrontApiToken = env.PUBLIC_STOREFRONT_API_TOKEN || 'default';
+
   const shopPromise = getShopAnalytics({
     storefront,
-    publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
+    publicStorefrontId,
   });
 
   return json(
     {
       ...deferredData,
       ...criticalData,
-      publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+      publicStoreDomain,
       cart: cartPromise,
       isLoggedIn: isLoggedInPromise,
       shop: shopPromise,
       consent: {
         language: context.storefront.i18n.language,
-        checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
-        storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+        checkoutDomain: publicCheckoutDomain,
+        storefrontAccessToken: publicStorefrontApiToken,
       },
     } as RootData,
     {
