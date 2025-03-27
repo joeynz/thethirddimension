@@ -63,9 +63,15 @@ function SceneContent({ product }: SceneProps) {
       </mesh>
 
       {/* Back wall */}
-      <mesh receiveShadow position={[0, 24.9, -25]}>
+      <mesh receiveShadow position={[0, 25, -25]}>
         <boxGeometry args={[50, 50, 0.2]} />
         <meshStandardMaterial color="#0000ff" />
+      </mesh>
+
+      {/* Origin sphere */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[0.5, 32, 32]} />
+        <meshStandardMaterial color="#ff0000" />
       </mesh>
 
       {/* Store entrance */}
