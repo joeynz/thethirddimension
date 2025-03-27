@@ -64,7 +64,7 @@ function SceneContent({ product }: SceneProps) {
       />
       
       {/* Ground */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position={[0, -0.1, 0]}>
+      <mesh receiveShadow position={[0, -0.1, 0]}>
         <boxGeometry args={[50, 0.2, 50]} />
         <meshStandardMaterial color="#0000ff" />
       </mesh>
@@ -72,7 +72,7 @@ function SceneContent({ product }: SceneProps) {
       {/* Back wall */}
       <mesh receiveShadow position={[0, 25, -25]}>
         <boxGeometry args={[50, 50, 0.2]} />
-        <meshStandardMaterial color="#0000ff" />
+        <meshStandardMaterial color="#006400" />
       </mesh>
 
       {/* Origin sphere */}
