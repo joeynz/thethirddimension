@@ -120,10 +120,31 @@ export async function loader(args: LoaderFunctionArgs) {
     publicStorefrontId,
   });
 
+  // Ensure header is always defined
+  const header = criticalData.header || {
+    shop: {
+      id: 'default',
+      name: 'The Third Dimension',
+      description: 'A revolutionary 3D ecommerce experience',
+      primaryDomain: {
+        url: 'https://the-third-dimension.xyz',
+      },
+      brand: {
+        logo: {
+          image: {
+            url: '',
+          },
+        },
+      },
+    },
+    menu: null,
+  };
+
   return json(
     {
       ...deferredData,
       ...criticalData,
+      header,
       publicStoreDomain,
       cart: cartPromise,
       isLoggedIn: isLoggedInPromise,
