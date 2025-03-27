@@ -178,6 +178,8 @@ async function loadCriticalData(args: LoaderFunctionArgs) {
         cache: storefront.CacheLong(),
         variables: {
           headerMenuHandle: 'main-menu',
+          language: context.storefront.i18n.language,
+          country: context.storefront.i18n.country,
         },
       }),
     ]);
@@ -208,6 +210,8 @@ function loadDeferredData(args: LoaderFunctionArgs) {
       cache: storefront.CacheLong(),
       variables: {
         footerMenuHandle: 'footer',
+        language: context.storefront.i18n.language,
+        country: context.storefront.i18n.country,
       },
     })
     .catch((error) => {
