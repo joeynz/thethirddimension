@@ -1,6 +1,6 @@
 import {useNonce, getShopAnalytics, Analytics} from '@shopify/hydrogen';
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import type {CartReturn, ShopAnalytics, LanguageCode} from '@shopify/hydrogen';
+import type {CartReturn, ShopAnalytics} from '@shopify/hydrogen';
 import {
   Links,
   Meta,
@@ -26,14 +26,14 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 export type RootLoader = typeof loader;
 
 interface RootData {
-  cart: Promise<CartApiQueryFragment | null>;
+  cart: Promise<CartReturn | null>;
   isLoggedIn: Promise<boolean>;
   shop: Promise<ShopAnalytics | null>;
   header: any;
   footer: Promise<any>;
   publicStoreDomain: string;
   consent: {
-    language?: LanguageCode;
+    language?: string;
   };
 }
 
@@ -130,7 +130,7 @@ export async function loader(args: LoaderFunctionArgs) {
       isLoggedIn: isLoggedInPromise,
       shop: shopPromise,
       consent: {
-        language: context.storefront.i18n.language as LanguageCode,
+        language: context.storefront.i18n.language,
       },
     },
     {
