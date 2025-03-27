@@ -291,7 +291,6 @@ export function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root') as RootData;
   const location = useLocation();
-  const isHomepage = location.pathname === '/';
 
   if (!data) {
     return null;
@@ -314,11 +313,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
           shop={data.shop}
           consent={data.consent}
         >
-          {isHomepage ? (
-            children
-          ) : (
-            <PageLayout {...data}>{children}</PageLayout>
-          )}
+          <PageLayout {...data}>{children}</PageLayout>
         </Analytics.Provider>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
