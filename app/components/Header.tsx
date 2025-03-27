@@ -27,14 +27,14 @@ export function Header({
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
         <strong>{shop.name}</strong>
       </NavLink>
-      {menu && <HeaderMenu menu={menu} />}
+      <HeaderMenu menu={menu} />
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
     </header>
   );
 }
 
 function HeaderMenu({menu}: {menu: HeaderQuery['menu']}) {
-  if (!menu?.items?.length) return null;
+  if (!menu) return null;
 
   return (
     <nav className="header-menu" role="navigation">
