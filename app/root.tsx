@@ -93,22 +93,6 @@ export function meta() {
   return [
     {title: 'The Third Dimension'},
     {description: 'A revolutionary 3D ecommerce experience'},
-    {
-      'content-security-policy': `
-        default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval' 'unsafe-inline' blob:;
-        worker-src 'self' blob:;
-        connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net;
-        font-src 'self' https://cdn.jsdelivr.net;
-        media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
-        object-src 'none';
-        base-uri 'self';
-        form-action 'self';
-        frame-ancestors 'none';
-        block-all-mixed-content;
-        script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
-        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-      `.replace(/\s+/g, ' ').trim(),
-    },
   ];
 }
 
@@ -148,7 +132,7 @@ export async function loader(args: LoaderFunctionArgs) {
         'content-security-policy': `
           default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval' 'unsafe-inline' blob:;
           worker-src 'self' blob: 'unsafe-eval';
-          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com;
+          connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.jsdelivr.net;
           font-src 'self' https://cdn.jsdelivr.net;
           media-src 'self' https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
           object-src 'none';
