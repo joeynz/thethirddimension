@@ -149,7 +149,7 @@ export async function loader(args: LoaderFunctionArgs) {
           block-all-mixed-content;
           script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:;
           style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-          img-src 'self' data: https://cdn.shopify.com https://bsbunj-hc.myshopify.com;
+          img-src 'self' data: https://cdn.shopify.com https://bsbunj-hc.myshopify.com https://*.myshopify.com;
         `.replace(/\s+/g, ' ').trim(),
       },
     },
