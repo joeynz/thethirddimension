@@ -1,6 +1,6 @@
 import {useNonce, getShopAnalytics, Analytics} from '@shopify/hydrogen';
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import type {CartReturn, ShopAnalytics, CountryCode} from '@shopify/hydrogen';
+import type {CartReturn, ShopAnalytics} from '@shopify/hydrogen';
 import {
   Links,
   Meta,
@@ -25,18 +25,16 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 
 export type RootLoader = typeof loader;
 
-type Consent = {
-  language?: string;
-};
-
 interface RootData {
-  cart: Promise<CartReturn | null>;
-  isLoggedIn: Promise<boolean>;
-  shop: Promise<ShopAnalytics | null>;
+  cart: CartReturn | null;
+  isLoggedIn: boolean;
+  shop: ShopAnalytics | null;
   header: any;
   footer: Promise<any>;
   publicStoreDomain: string;
-  consent: Consent;
+  consent: {
+    language?: string;
+  };
 }
 
 /**
@@ -107,10 +105,19 @@ export function meta() {
 }
 
 export async function loader({context}: LoaderFunctionArgs) {
-  const {cart, customerAccount} = context;
+  // Start fetching non-critical data without blocking time to first byte
+  const deferredData = loadDeferredData({context});
+
+  // Await the critical data required to render initial state of the page
+  const criticalData = await loadCriticalData({context});
+
+  const {storefront, env, cart, customerAccount} = context;
   const cartPromise = cart.get();
   const isLoggedInPromise = customerAccount.isLoggedIn();
-  const shopPromise = getShopAnalytics({...context.env});
+  const shopPromise = getShopAnalytics({
+    storefront,
+    publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
+  });
 
   const [cartData, isLoggedIn, shop] = await Promise.all([
     cartPromise,
@@ -120,12 +127,14 @@ export async function loader({context}: LoaderFunctionArgs) {
 
   return json(
     {
+      ...deferredData,
+      ...criticalData,
+      publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
       cart: cartData,
       isLoggedIn,
       shop,
-      publicStoreDomain: context.env.PUBLIC_STORE_DOMAIN,
       consent: {
-        language: context.env.PUBLIC_LANGUAGE_CODE,
+        language: context.storefront.i18n.language,
       },
     },
     {
