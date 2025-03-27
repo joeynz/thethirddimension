@@ -3,13 +3,15 @@ import {useLoaderData} from '@remix-run/react';
 import {Experience} from '~/components/3d/Experience';
 import {Header} from '~/components/Header';
 import type {CartReturn} from '@shopify/hydrogen';
-import type {HeaderQuery} from 'storefrontapi.generated';
+import type {HeaderQuery, FooterQuery} from 'storefrontapi.generated';
+import {PageLayout} from '~/components/PageLayout';
+import {FOOTER_QUERY} from '~/lib/fragments';
 
 interface MediaEdge {
   node: {
     __typename: string;
     url?: string;
-    alt?: string;
+    alt?: string | null;
     previewImage?: {
       url: string;
     };
@@ -37,6 +39,7 @@ type LoaderData = {
   shop: Promise<any> | null;
   product: any | null;
   error: string | null;
+  footer: Promise<FooterQuery | null>;
 };
 
 export function meta() {
@@ -59,7 +62,8 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
         publicStoreDomain: '',
         shop: null,
         product: null,
-        error: 'Context is not available'
+        error: 'Context is not available',
+        footer: Promise.resolve(null)
       });
     }
 
@@ -74,7 +78,8 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
         publicStoreDomain: '',
         shop: null,
         product: null,
-        error: 'Storefront API is not configured'
+        error: 'Storefront API is not configured',
+        footer: Promise.resolve(null)
       });
     }
 
@@ -86,6 +91,13 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
     const cart = context.cart.get();
     const isLoggedIn = context.customerAccount.isLoggedIn();
     const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
+    const footer = storefront.query(FOOTER_QUERY, {
+      variables: {
+        footerMenuHandle: 'footer',
+        language: context.storefront.i18n.language,
+        country: context.storefront.i18n.country,
+      },
+    });
 
     // First, let's get a list of all products to see what's available
     const LIST_PRODUCTS_QUERY = `#graphql
@@ -139,18 +151,21 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
         publicStoreDomain,
         shop: storefront.query(SHOP_QUERY),
         product: null,
-        error: 'Product not found'
+        error: 'Product not found',
+        footer: Promise.resolve(null)
       });
     }
 
     // Find the 3D model in the media collection
-    const model3d = product.media?.edges?.find((edge: MediaEdge) => edge.node?.__typename === 'Model3d')?.node;
+    const model3d = product.media?.edges?.find((edge) => 
+      edge.node?.__typename === 'Model3d' && 'sources' in edge.node
+    )?.node;
 
-    if (!model3d) {
+    if (!model3d || !('sources' in model3d)) {
       console.error('=== ERROR: Product has no 3D model data ===', {
         hasMedia: !!product.media,
         mediaEdges: product.media?.edges?.length,
-        mediaTypes: product.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
+        mediaTypes: product.media?.edges?.map((edge) => edge.node?.__typename)
       });
       return defer<LoaderData>({
         header,
@@ -162,12 +177,13 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
           ...product,
           model3d: null
         },
-        error: 'Product has no 3D model'
+        error: 'Product has no 3D model',
+        footer
       });
     }
 
     // Get the first GLB or GLTF source
-    const modelSource = model3d.sources?.find((source: ModelSource) => 
+    const modelSource = model3d.sources?.find((source) => 
       source.format === 'GLB' || 
       source.format === 'GLTF' ||
       source.mimeType === 'model/gltf-binary' ||
@@ -188,7 +204,8 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
           ...product,
           model3d: null
         },
-        error: 'No valid 3D model source found'
+        error: 'No valid 3D model source found',
+        footer
       });
     }
 
@@ -201,22 +218,18 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
       shop: storefront.query(SHOP_QUERY),
       product: {
         ...product,
-        model3d: {
-          ...model3d,
-          url: modelSource.url
-        }
+        model3d: modelSource ? {
+          url: modelSource.url,
+          format: modelSource.format,
+          mimeType: modelSource.mimeType,
+          filesize: modelSource.filesize,
+        } : null,
       },
-      error: null
+      error: null,
+      footer
     });
   } catch (error) {
-    console.error('=== ERROR: Failed in loader ===', error);
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-    }
+    console.error('=== ERROR IN LOADER ===', error);
     return defer<LoaderData>({
       header: null,
       cart: Promise.resolve(null),
@@ -224,117 +237,36 @@ export async function loader({context}: LoaderFunctionArgs): Promise<ReturnType<
       publicStoreDomain: '',
       shop: null,
       product: null,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      footer: Promise.resolve(null)
     });
   }
 }
 
 export default function Homepage() {
+  const {header, cart, isLoggedIn, publicStoreDomain, product, error, footer} = useLoaderData<typeof loader>();
   console.log('=== RENDERING HOMEPAGE ===');
-  const {header, cart, isLoggedIn, publicStoreDomain, shop, product, error} = useLoaderData<typeof loader>();
+  console.log('=== LOADER DATA ===', {header, product, error});
 
-  console.log('=== LOADER DATA ===', { 
-    shop: shop ? 'Loading shop data...' : null, 
-    product: product ? { id: product.id, title: product.title } : null, 
-    error 
-  });
-
-  if (error) {
-    console.error('=== ERROR IN HOMEPAGE ===', error);
+  if (error || !header) {
     return (
-      <div className="flex h-screen w-screen flex-col bg-gray-100">
-        {header && (
-          <Header 
-            header={header}
-            cart={cart}
-            isLoggedIn={isLoggedIn}
-            publicStoreDomain={publicStoreDomain}
-          />
-        )}
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600">Error Loading Product</h1>
-            <p className="mt-2 text-gray-600">{error}</p>
-            <p className="mt-4 text-sm text-gray-500">
-              Please make sure the product "test-chair" exists and has a 3D model attached.
-            </p>
-          </div>
-        </div>
+      <div className="error-container">
+        <h1>Error</h1>
+        <p>{error || 'Header data is missing'}</p>
       </div>
     );
   }
 
-  if (!product) {
-    console.error('=== ERROR: No product data ===');
-    return (
-      <div className="flex h-screen w-screen flex-col bg-gray-100">
-        {header && (
-          <Header 
-            header={header}
-            cart={cart}
-            isLoggedIn={isLoggedIn}
-            publicStoreDomain={publicStoreDomain}
-          />
-        )}
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-yellow-600">Product Not Found</h1>
-            <p className="mt-2 text-gray-600">Could not find product with handle "test-chair"</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Check if product has the required properties
-  const hasModel3d = product.model3d || 
-    (product.media?.edges?.some((edge: MediaEdge) => edge.node?.__typename === 'Model3d'));
-
-  if (!hasModel3d) {
-    console.error('=== ERROR: Product has no 3D model ===', {
-      hasModel3d: !!product.model3d,
-      hasMedia: !!product.media,
-      mediaEdges: product.media?.edges?.length,
-      mediaTypes: product.media?.edges?.map((edge: MediaEdge) => edge.node?.__typename)
-    });
-    return (
-      <div className="flex h-screen w-screen flex-col bg-gray-100">
-        {header && (
-          <Header 
-            header={header}
-            cart={cart}
-            isLoggedIn={isLoggedIn}
-            publicStoreDomain={publicStoreDomain}
-          />
-        )}
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-yellow-600">3D Model Not Available</h1>
-            <p className="mt-2 text-gray-600">This product does not have a 3D model attached.</p>
-            <p className="mt-4 text-sm text-gray-500">
-              Please add a 3D model to the product in your Shopify admin.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  console.log('=== RENDERING 3D EXPERIENCE ===');
   return (
-    <div className="flex h-screen w-screen flex-col bg-gray-100">
-      {header && (
-        <Header 
-          header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
-        />
-      )}
-      <div className="relative flex-1 overflow-hidden">
-        <Experience product={product} />
-      </div>
-    </div>
+    <PageLayout
+      header={header}
+      cart={cart}
+      isLoggedIn={isLoggedIn}
+      publicStoreDomain={publicStoreDomain}
+      footer={footer || Promise.resolve(null)}
+    >
+      <Experience product={product} />
+    </PageLayout>
   );
 }
 
