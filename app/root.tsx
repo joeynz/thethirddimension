@@ -167,8 +167,8 @@ async function loadCriticalData(args: LoaderFunctionArgs) {
       }),
     ]);
 
-    if (!header) {
-      throw new Error('Failed to load header data');
+    if (!header?.shop) {
+      throw new Error('Failed to load shop data');
     }
 
     return {header};
