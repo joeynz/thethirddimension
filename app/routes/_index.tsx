@@ -248,18 +248,31 @@ export default function Homepage() {
   console.log('=== RENDERING HOMEPAGE ===');
   console.log('=== LOADER DATA ===', {header, product, error});
 
-  if (error || !header) {
-    return (
-      <div className="error-container">
-        <h1>Error</h1>
-        <p>{error || 'Header data is missing'}</p>
-      </div>
-    );
-  }
+  // Provide default header if missing
+  const defaultHeader = {
+    shop: {
+      id: 'default',
+      name: 'The Third Dimension',
+      description: 'A revolutionary 3D ecommerce experience',
+      primaryDomain: {
+        url: 'https://the-third-dimension.xyz',
+      },
+      brand: {
+        logo: {
+          image: {
+            url: '',
+          },
+        },
+      },
+    },
+    menu: null,
+  };
+
+  const headerData = header || defaultHeader;
 
   return (
     <PageLayout
-      header={header}
+      header={headerData}
       cart={cart}
       isLoggedIn={isLoggedIn}
       publicStoreDomain={publicStoreDomain}
