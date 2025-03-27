@@ -95,7 +95,7 @@ export function meta() {
     {description: 'A revolutionary 3D ecommerce experience'},
     {
       'content-security-policy': `
-        default-src 'self' https://cdn.shopify.com https://shopify.com 'unsafe-eval' 'unsafe-inline' blob:;
+        default-src 'self' https://cdn.shopify.com https://shopify.com;
         worker-src 'self' blob: 'unsafe-eval';
         connect-src 'self' https://monorail-edge.shopifysvc.com https://the-third-dimension.xyz https://bsbunj-hc.myshopify.com https://cdn.jsdelivr.net https://cdn.shopify.com https://shopify.com https://*.jsdelivr.net https://*.githubusercontent.com https://*.github.com;
         font-src 'self' https://cdn.jsdelivr.net;
@@ -290,8 +290,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
             <PageLayout {...data}>{children}</PageLayout>
           )}
         </Analytics.Provider>
-        <ScrollRestoration />
-        <Scripts />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
         <LiveReload />
       </body>
     </html>
