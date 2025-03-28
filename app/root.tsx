@@ -100,13 +100,28 @@ export async function loader(args: LoaderFunctionArgs) {
   const {context} = args;
   
   try {
+    console.log('=== ROOT LOADER STARTED ===');
+    console.log('Context available:', !!context);
+    console.log('Storefront available:', !!context?.storefront);
+    
     // Start fetching non-critical data without blocking time to first byte
+    console.log('Loading deferred data...');
     const deferredData = loadDeferredData(args);
+    console.log('Deferred data loaded');
 
     // Await the critical data required to render initial state of the page
+    console.log('Loading critical data...');
     const criticalData = await loadCriticalData(args);
+    console.log('Critical data loaded');
 
     const {storefront, env, cart, customerAccount} = context;
+    console.log('Environment variables:', {
+      hasStorefrontId: !!env.PUBLIC_STOREFRONT_ID,
+      hasStoreDomain: !!env.PUBLIC_STORE_DOMAIN,
+      hasCheckoutDomain: !!env.PUBLIC_CHECKOUT_DOMAIN,
+      hasStorefrontApiToken: !!env.PUBLIC_STOREFRONT_API_TOKEN
+    });
+
     const cartPromise = cart.get();
     const isLoggedInPromise = customerAccount.isLoggedIn();
     
@@ -116,10 +131,12 @@ export async function loader(args: LoaderFunctionArgs) {
     const publicCheckoutDomain = env.PUBLIC_CHECKOUT_DOMAIN || 'bsbunj-hc.myshopify.com';
     const publicStorefrontApiToken = env.PUBLIC_STOREFRONT_API_TOKEN || 'default';
 
+    console.log('Fetching shop analytics...');
     const shopPromise = getShopAnalytics({
       storefront,
       publicStorefrontId,
     });
+    console.log('Shop analytics promise created');
 
     // Ensure header is always defined
     const header = criticalData.header || {
@@ -141,6 +158,7 @@ export async function loader(args: LoaderFunctionArgs) {
       menu: null,
     };
 
+    console.log('=== ROOT LOADER SUCCESS ===');
     return json(
       {
         ...deferredData,
@@ -177,7 +195,15 @@ export async function loader(args: LoaderFunctionArgs) {
       },
     );
   } catch (error) {
-    console.error('Error in root loader:', error);
+    console.error('=== ERROR IN ROOT LOADER ===');
+    console.error('Error details:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('Context state:', {
+      hasContext: !!context,
+      hasStorefront: !!context?.storefront,
+      hasEnv: !!context?.env
+    });
+    
     return json(
       {
         header: {
@@ -242,6 +268,11 @@ async function loadCriticalData(args: LoaderFunctionArgs) {
   const {storefront} = context;
 
   try {
+    console.log('=== LOADING CRITICAL DATA STARTED ===');
+    console.log('Storefront available:', !!storefront);
+    console.log('Language:', context.storefront.i18n.language);
+    console.log('Country:', context.storefront.i18n.country);
+
     const [header] = await Promise.all([
       storefront.query(HEADER_QUERY, {
         cache: storefront.CacheLong(),
@@ -253,52 +284,20 @@ async function loadCriticalData(args: LoaderFunctionArgs) {
       }),
     ]);
 
-    // Provide default values if shop data is missing
-    const defaultHeader = {
-      shop: {
-        id: 'default',
-        name: 'The Third Dimension',
-        description: 'A revolutionary 3D ecommerce experience',
-        primaryDomain: {
-          url: 'https://the-third-dimension.xyz',
-        },
-        brand: {
-          logo: {
-            image: {
-              url: '',
-            },
-          },
-        },
-      },
-      menu: null,
-    };
-
+    console.log('=== CRITICAL DATA LOADED SUCCESSFULLY ===');
     return {
-      header: header || defaultHeader,
+      header,
     };
   } catch (error) {
-    console.error('Error loading critical data:', error);
-    // Return default values instead of throwing an error
-    return {
-      header: {
-        shop: {
-          id: 'default',
-          name: 'The Third Dimension',
-          description: 'A revolutionary 3D ecommerce experience',
-          primaryDomain: {
-            url: 'https://the-third-dimension.xyz',
-          },
-          brand: {
-            logo: {
-              image: {
-                url: '',
-              },
-            },
-          },
-        },
-        menu: null,
-      },
-    };
+    console.error('=== ERROR LOADING CRITICAL DATA ===');
+    console.error('Error details:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('Context state:', {
+      hasContext: !!context,
+      hasStorefront: !!context?.storefront,
+      hasI18n: !!context?.storefront?.i18n
+    });
+    throw error;
   }
 }
 
